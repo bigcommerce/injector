@@ -21,23 +21,6 @@ class ArrayServiceCache implements ServiceCacheInterface
     }
 
     /**
-     * @return array
-     */
-    public function getValues()
-    {
-        return $this->values;
-    }
-
-    /**
-     * @param array $values
-     * @return void
-     */
-    public function setValues($values)
-    {
-        $this->values = $values;
-    }
-
-    /**
      * Retrieve the value of a key in the cache.
      *
      * @param string $key
