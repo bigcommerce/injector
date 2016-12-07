@@ -1,0 +1,35 @@
+{
+  "name": "bigcommerce/injector",
+  "type": "library",
+  "description": "Dependency Injector for Pimple",
+  "keywords": [
+    "di",
+    "pimple",
+    "injector"
+  ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Adam Benson",
+      "email": "adam.benson@bigcommerce.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {
+    "php": "^7.0",
+    "pimple/pimple": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^5.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "Bigcommerce\\Injector\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests"
+    }
+  }
+}
