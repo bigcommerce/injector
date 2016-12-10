@@ -1,5 +1,5 @@
 <?php
-namespace Tests\Service;
+namespace Tests;
 
 use Bigcommerce\Injector\Cache\ServiceCacheInterface;
 use Bigcommerce\Injector\Exception\InjectorInvocationException;

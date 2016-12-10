@@ -3,6 +3,7 @@ namespace Bigcommerce\Injector;
 
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
+use ProxyManager\Factory\LazyLoadingValueHolderFactory;
 
 abstract class ServiceProvider implements ServiceProviderInterface
 {
@@ -104,10 +105,47 @@ abstract class ServiceProvider implements ServiceProviderInterface
      */
     protected function alias($aliasKey, $serviceKey)
     {
-        //Bound as a factory to ALWAYS pass through to underlying definition.
-        $this->container[$aliasKey] = $this->container->factory(
+        // Bound as a factory to ALWAYS pass through to underlying definition.
+        $this->bindFactory(
+            $aliasKey,
             function (Container $app) use ($serviceKey) {
                 return $app[$serviceKey];
+            }
+        );
+    }
+
+    /**
+     * Automatically bind and wire a lazy service using the Injector. Accepts an optional callable to build parameter
+     * overrides. Lazy services will return Proxies when retrieved, which will only fetch the underlying real service
+     * when first used. See http://ocramius.github.io/presentations/proxy-pattern-in-php/
+     *
+     * HINT: You can use this binding type for expensive services that you *might* need but don't want to instantiate
+     * eagerly.
+     *
+     * @param string $className FQCN of a class to auto-wire bind.
+     * @param callable|null $parameterFactory Callable to generate parameters to inject to the service. Will receive
+     * the IoC container as its first parameter.
+     * @return void
+     */
+    protected function autoBindLazy($className, callable $parameterFactory = null)
+    {
+        $this->bind(
+            $className,
+            function (Container $app) use ($className, $parameterFactory) {
+                $proxyFactory = new LazyLoadingValueHolderFactory();
+                $serviceFactory = $this->createAutoWireClosure($className, $parameterFactory);
+                return $proxyFactory->createProxy(
+                    $className,
+                    function (&$wrappedObject, $proxy, $method, $parameters, &$initializer) use (
+                        $className,
+                        $serviceFactory,
+                        $app
+                    ) {
+                        $wrappedObject = $serviceFactory($app);
+                        $initializer = null;
+                        return true;
+                    }
+                );
             }
         );
     }
