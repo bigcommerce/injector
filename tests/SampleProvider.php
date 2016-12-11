@@ -37,5 +37,8 @@ class SampleProvider extends ServiceProvider
 
         $this->autoBind(self::class);
         $this->autoBindFactory(self::class);
+
+        $this->lazyBind(self::class);
+        $this->lazyBindFactory(self::class);
     }
 }

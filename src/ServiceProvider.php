@@ -1,9 +1,9 @@
 <?php
 namespace Bigcommerce\Injector;
 
+use Bigcommerce\Injector\ServiceProvider\BindingClosureFactory;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
-use ProxyManager\Factory\LazyLoadingValueHolderFactory;
 
 abstract class ServiceProvider implements ServiceProviderInterface
 {
@@ -18,13 +18,23 @@ abstract class ServiceProvider implements ServiceProviderInterface
     protected $container;
 
     /**
+     * @var BindingClosureFactory
+     */
+    private $closureFactory;
+
+    /**
      * @param InjectorInterface $injector
      * @param Container $container
+     * @param BindingClosureFactory $closureFactory
      */
-    public function __construct(InjectorInterface $injector, Container $container)
-    {
+    public function __construct(
+        InjectorInterface $injector,
+        Container $container,
+        BindingClosureFactory $closureFactory
+    ) {
         $this->injector = $injector;
         $this->container = $container;
+        $this->closureFactory = $closureFactory;
     }
 
     /**
@@ -127,26 +137,32 @@ abstract class ServiceProvider implements ServiceProviderInterface
      * the IoC container as its first parameter.
      * @return void
      */
-    protected function autoBindLazy($className, callable $parameterFactory = null)
+    protected function lazyBind($className, callable $parameterFactory = null)
     {
         $this->bind(
             $className,
-            function (Container $app) use ($className, $parameterFactory) {
-                $proxyFactory = new LazyLoadingValueHolderFactory();
-                $serviceFactory = $this->createAutoWireClosure($className, $parameterFactory);
-                return $proxyFactory->createProxy(
-                    $className,
-                    function (&$wrappedObject, $proxy, $method, $parameters, &$initializer) use (
-                        $className,
-                        $serviceFactory,
-                        $app
-                    ) {
-                        $wrappedObject = $serviceFactory($app);
-                        $initializer = null;
-                        return true;
-                    }
-                );
-            }
+            $this->closureFactory->createAutoWireProxyClosure($className, $parameterFactory)
+        );
+    }
+
+    /**
+     * Automatically bind and wire a lazy factory using the Injector. Accepts an optional callable to build parameter
+     * overrides. Lazy services will return Proxies when retrieved, which will only fetch the underlying real service
+     * when first used. See http://ocramius.github.io/presentations/proxy-pattern-in-php/
+     *
+     * HINT: You can use this binding type for expensive services that you *might* need but don't want to instantiate
+     * eagerly.
+     *
+     * @param string $className FQCN of a class to auto-wire bind.
+     * @param callable|null $parameterFactory Callable to generate parameters to inject to the service. Will receive
+     * the IoC container as its first parameter.
+     * @return void
+     */
+    protected function lazyBindFactory($className, callable $parameterFactory = null)
+    {
+        $this->bindFactory(
+            $className,
+            $this->closureFactory->createAutoWireProxyClosure($className, $parameterFactory)
         );
     }
 
@@ -164,7 +180,7 @@ abstract class ServiceProvider implements ServiceProviderInterface
     {
         $this->bind(
             $className,
-            $this->createAutoWireClosure($className, $parameterFactory)
+            $this->closureFactory->createAutoWireClosure($className, $parameterFactory)
         );
     }
 
@@ -182,23 +198,7 @@ abstract class ServiceProvider implements ServiceProviderInterface
     {
         $this->bindFactory(
             $className,
-            $this->createAutoWireClosure($className, $parameterFactory)
+            $this->closureFactory->createAutoWireClosure($className, $parameterFactory)
         );
-    }
-
-    /**
-     * Generate a closure that will use the Injector to auto-wire a service definition.
-     *
-     * @param string $className FQCN of a class to auto-wire bind.
-     * @param callable|null $parameterFactory Callable to generate parameters to inject to the service. Will receive
-     * the IoC container as its first parameter.
-     * @return \Closure
-     */
-    private function createAutoWireClosure($className, callable $parameterFactory = null)
-    {
-        return function (Container $app) use ($className, $parameterFactory) {
-            $parameters = $parameterFactory ? $parameterFactory($app) : [];
-            return $this->injector->create($className, $parameters);
-        };
     }
 }
