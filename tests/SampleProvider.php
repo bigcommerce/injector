@@ -2,7 +2,7 @@
 declare(strict_types = 1);
 namespace Tests;
 
-use Bigcommerce\Injector\ServiceProvider;
+use Bigcommerce\Injector\InjectorServiceProvider;
 use Pimple\Container;
 
 /**
@@ -16,7 +16,7 @@ use Pimple\Container;
  * application other than the ServiceProviders themselves. This is a conscious design decision to avoid the container
  * being exposed past bootstrap and should be reasoned about prior to any future iterations upon this design.
  */
-class SampleProvider extends ServiceProvider
+class SampleProvider extends InjectorServiceProvider
 {
     /**
      * Registers services on the given container.

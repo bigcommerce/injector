@@ -5,7 +5,7 @@ use Bigcommerce\Injector\ServiceProvider\BindingClosureFactory;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 
-abstract class ServiceProvider implements ServiceProviderInterface
+abstract class InjectorServiceProvider implements ServiceProviderInterface
 {
     /**
      * @var InjectorInterface

@@ -9,9 +9,9 @@ use Prophecy\Prophecy\ObjectProphecy;
 
 /**
  *
- * @coversDefaultClass Bigcommerce\Injector\ServiceProvider
+ * @coversDefaultClass Bigcommerce\Injector\InjectorServiceProvider
  */
-class ServiceProviderTest extends \PHPUnit_Framework_TestCase
+class InjectorServiceProviderTest extends \PHPUnit_Framework_TestCase
 {
     /** @var Injector|ObjectProphecy */
     private $injector;
