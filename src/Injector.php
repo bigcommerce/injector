@@ -94,15 +94,13 @@ class Injector implements InjectorInterface
             throw new InjectorInvocationException(
                 "Can't create $className " .
                 " - __construct() missing parameter '".$e->getParameterString()."'" .
-                " could not be found. Either register it as a service or pass it to create via parameters.",
-                $e
+                " could not be found. Either register it as a service or pass it to create via parameters."
             );
         } catch (InjectorInvocationException $e) {
             //Wrap the exception stack for recursive calls to aid debugging
             throw new InjectorInvocationException(
                 $e->getMessage() .
-                PHP_EOL . " => (Called when creating $className)",
-                $e
+                PHP_EOL . " => (Called when creating $className)"
             );
         }
     }
@@ -143,8 +141,7 @@ class Injector implements InjectorInterface
             throw new InjectorInvocationException(
                 "Can't invoke method $className::$methodName()" .
                 " - missing parameter '".$e->getParameterString()."'"  .
-                " could not be found. Either register it as a service or pass it to invoke via parameters.",
-                $e
+                " could not be found. Either register it as a service or pass it to invoke via parameters."
             );
         } catch (\ReflectionException $e) {
             throw new InjectorInvocationException(
