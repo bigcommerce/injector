@@ -43,7 +43,7 @@ abstract class InjectorServiceProvider implements ServiceProviderInterface
      * This method should only be used to configure services and parameters.
      * It should not get services.
      *
-     * @param Container $app An Container instance
+     * @param Container $app
      * @return void
      */
     abstract public function register(Container $app);
