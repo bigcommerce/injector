@@ -18,9 +18,13 @@ class ArrayContainerAdapter implements ContainerInterface
      */
     private $arrayContainer;
 
-    public function __construct(array $pimpleContainer)
+    /**
+     * ArrayContainerAdapter constructor.
+     * @param array|\ArrayAccess $arrayContainer
+     */
+    public function __construct($arrayContainer)
     {
-        $this->arrayContainer = $pimpleContainer;
+        $this->arrayContainer = $arrayContainer;
     }
 
     /**
