@@ -4,7 +4,7 @@ namespace Bigcommerce\Injector;
 use Bigcommerce\Injector\Exception\InjectorInvocationException;
 use Bigcommerce\Injector\Exception\MissingRequiredParameterException;
 use Bigcommerce\Injector\Reflection\ParameterInspector;
-use Pimple\Container;
+use Interop\Container\ContainerInterface;
 
 /**
  * The Injector provides instantiation of objects (or invocation of methods) within the BC application and
@@ -27,7 +27,7 @@ use Pimple\Container;
 class Injector implements InjectorInterface
 {
     /**
-     * @var Container
+     * @var ContainerInterface
      */
     private $container;
 
@@ -45,11 +45,11 @@ class Injector implements InjectorInterface
     private $inspector;
 
     /**
-     * Injector constructor.
-     * @param Container $container
+     *
+     * @param ContainerInterface $container
      * @param ParameterInspector $inspector
      */
-    public function __construct(Container $container, ParameterInspector $inspector)
+    public function __construct(ContainerInterface $container, ParameterInspector $inspector)
     {
         $this->container = $container;
         $this->inspector = $inspector;
@@ -89,11 +89,12 @@ class Injector implements InjectorInterface
                 $this->inspector->getSignatureByReflectionClass($reflectionClass, "__construct"),
                 $parameters
             );
+
             return $reflectionClass->newInstanceArgs($parameters);
         } catch (MissingRequiredParameterException $e) {
             throw new InjectorInvocationException(
                 "Can't create $className " .
-                " - __construct() missing parameter '".$e->getParameterString()."'" .
+                " - __construct() missing parameter '" . $e->getParameterString() . "'" .
                 " could not be found. Either register it as a service or pass it to create via parameters."
             );
         } catch (InjectorInvocationException $e) {
@@ -136,11 +137,12 @@ class Injector implements InjectorInterface
                 $this->inspector->getSignatureByClassName($className, $methodName),
                 $parameters
             );
+
             return call_user_func_array([$instance, $methodName], $parameters);
         } catch (MissingRequiredParameterException $e) {
             throw new InjectorInvocationException(
                 "Can't invoke method $className::$methodName()" .
-                " - missing parameter '".$e->getParameterString()."'"  .
+                " - missing parameter '" . $e->getParameterString() . "'" .
                 " could not be found. Either register it as a service or pass it to invoke via parameters."
             );
         } catch (\ReflectionException $e) {
@@ -183,18 +185,12 @@ class Injector implements InjectorInterface
                 return true;
             }
         }
+
         return false;
     }
 
     /**
      * Construct the parameter array to be passed to a method call based on its parameter signature
-     * This method will hunt for dependencies to satisfy the parameter requirements in the following order:
-     *  - Key name in provided parameters (named parameters)
-     *  - Index in provided parameters
-     *  - FQCN in provided parameters
-     *  - FQCN in container
-     *  - Default value against method signature
-     *  - Auto create white list of classes to recursively create
      *
      * @param array $methodSignature
      * @param array $providedParameters
@@ -207,36 +203,58 @@ class Injector implements InjectorInterface
     private function buildParameterArray($methodSignature, $providedParameters)
     {
         $parameters = [];
-        foreach ($methodSignature as $index => $parameterData) {
-            $name = $parameterData['name'];
-            $type = (isset($parameterData['type'])) ? $parameterData['type'] : false;
-
-            if (array_key_exists($name, $providedParameters)) {
-                //Dependency exists by name in providedParameters
-                $parameters[$index] = $providedParameters[$name];
-            } elseif (array_key_exists($index, $providedParameters)) {
-                //Dependency exists by index in providedParameters
-                $parameters[$index] = $providedParameters[$index];
-            } elseif ($type && array_key_exists($type, $providedParameters)) {
-                //Dependency exists by type (Fully Qualified Class Name) in providedParameters
-                $parameters[$index] = $providedParameters[$type];
-            } elseif ($type && isset($this->container[$type])) {
-                //Dependency in container by type (Fully Qualified Class Name)
-                $parameters[$index] = $this->container[$type];
-            } elseif (array_key_exists("default", $parameterData)) {
-                //Default value defined in signature
-                $parameters[$index] = $parameterData['default'];
-            } elseif ($this->canAutoCreate($type)) {
-                //Auto create white list - recursion
-                $parameters[$index] = $this->create($type);
-            } else {
-                throw new MissingRequiredParameterException(
-                    $name,
-                    $type,
-                    sprintf('Could not find required parameter "%s" for method', $name)
-                );
-            }
+        foreach ($methodSignature as $position => $parameterData) {
+            $parameters[$position] = $this->resolveParameter($position, $parameterData, $providedParameters);
         }
         return $parameters;
+    }
+
+    /**
+     * This method will hunt for dependencies to satisfy the parameter requirements in the following order:
+     *  - Key name in provided parameters (named parameters)
+     *  - Index in provided parameters
+     *  - FQCN in provided parameters
+     *  - FQCN in container
+     *  - Default value against method signature
+     *  - Auto create white list of classes to recursively create
+     * @param int $position
+     * @param array $parameterData
+     * @param array $providedParameters
+     * @throws MissingRequiredParameterException
+     * @return mixed The resolved parameter value
+     */
+    private function resolveParameter($position, $parameterData, $providedParameters)
+    {
+        $name = $parameterData['name'];
+        $type = (isset($parameterData['type'])) ? $parameterData['type'] : false;
+        if (array_key_exists($name, $providedParameters)) {
+            // Found the dependency by name in providedParameters
+            return $providedParameters[$name];
+        }
+        if (array_key_exists($position, $providedParameters)) {
+            // Found the dependency index in providedParameters
+            return $providedParameters[$position];
+        }
+        if ($type && array_key_exists($type, $providedParameters)) {
+            // Found the dependency by type in providedParameters
+            return $providedParameters[$type];
+        }
+        if ($type && $this->container->has($type)) {
+            // Found the dependency by type in the container
+            return $this->container->get($type);
+        }
+        if (array_key_exists("default", $parameterData)) {
+            //Default value defined in signature
+            return $parameterData['default'];
+        }
+        if ($this->canAutoCreate($type)) {
+            //Auto create white list - recursion
+            return $this->create($type);
+        }
+        throw new MissingRequiredParameterException(
+            $name,
+            $type,
+            sprintf('Could not find required parameter "%s" for method', $name)
+        );
     }
 }
