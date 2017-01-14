@@ -1,25 +1,26 @@
 <?php
 namespace Bigcommerce\Injector\Adapter;
 
+use Bigcommerce\Injector\Adapter\Exception\ServiceNotFoundException;
 use Interop\Container\ContainerInterface;
 use Interop\Container\Exception\ContainerException;
 use Interop\Container\Exception\NotFoundException;
 use Pimple\Container;
 
 /**
- * Adapt Pimple's container to ContainerInterop Interface
+ * Adapt a simple array container (i.e Pimple) to ContainerInterop Interface
  * @package Bigcommerce\Injector\Adapter
  */
-class PimpleContainerAdapter implements ContainerInterface
+class ArrayContainerAdapter implements ContainerInterface
 {
     /**
-     * @var Container
+     * @var array
      */
-    private $pimpleContainer;
+    private $arrayContainer;
 
-    public function __construct(Container $pimpleContainer)
+    public function __construct(array $pimpleContainer)
     {
-        $this->pimpleContainer = $pimpleContainer;
+        $this->arrayContainer = $pimpleContainer;
     }
 
     /**
@@ -34,7 +35,10 @@ class PimpleContainerAdapter implements ContainerInterface
      */
     public function get($id)
     {
-        return $this->pimpleContainer->offsetGet($id);
+        if(!$this->has($id)){
+            throw new ServiceNotFoundException("Service not found in container ($id).");
+        }
+        return $this->arrayContainer[$id];
     }
 
     /**
@@ -47,6 +51,6 @@ class PimpleContainerAdapter implements ContainerInterface
      */
     public function has($id)
     {
-        return $this->pimpleContainer->offsetExists($id);
+        return isset($this->arrayContainer[$id]);
     }
 }

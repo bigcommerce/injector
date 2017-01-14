@@ -5,6 +5,7 @@ use Bigcommerce\Injector\Cache\ServiceCacheInterface;
 use Bigcommerce\Injector\Exception\InjectorInvocationException;
 use Bigcommerce\Injector\Injector;
 use Bigcommerce\Injector\Reflection\ParameterInspector;
+use Interop\Container\ContainerInterface;
 use Pimple\Container;
 use Prophecy\Prophecy\ObjectProphecy;
 use Tests\Dummy\DummyDependency;
@@ -20,7 +21,7 @@ use Tests\Dummy\DummySubDependency;
 class InjectorTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var Container|ObjectProphecy
+     * @var ContainerInterface|ObjectProphecy
      */
     private $container;
 
@@ -32,7 +33,7 @@ class InjectorTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         parent::setUp();
-        $this->container = $this->prophesize(Container::class);
+        $this->container = $this->prophesize(ContainerInterface::class);
         $this->inspector = $this->prophesize(ParameterInspector::class);
     }
 
@@ -111,10 +112,10 @@ class InjectorTest extends \PHPUnit_Framework_TestCase
 
         $this->mockDummySimpleSignature();
 
-        $this->container->offsetExists(ServiceCacheInterface::class)->willReturn(true);
-        $this->container->offsetGet(ServiceCacheInterface::class)->willReturn($cacheMock);
-        $this->container->offsetExists(DummyDependency::class)->willReturn(true);
-        $this->container->offsetGet(DummyDependency::class)->willReturn($dummyDependency);
+        $this->container->has(ServiceCacheInterface::class)->willReturn(true);
+        $this->container->get(ServiceCacheInterface::class)->willReturn($cacheMock);
+        $this->container->has(DummyDependency::class)->willReturn(true);
+        $this->container->get(DummyDependency::class)->willReturn($dummyDependency);
 
         $injector = new Injector($this->container->reveal(), $this->inspector->reveal());
         $instance = $injector->create(
