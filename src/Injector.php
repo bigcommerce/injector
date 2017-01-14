@@ -226,7 +226,7 @@ class Injector implements InjectorInterface
     private function resolveParameter($position, $parameterData, $providedParameters)
     {
         $name = $parameterData['name'];
-        $type = (isset($parameterData['type'])) ? $parameterData['type'] : false;
+        $type = $parameterData['type'] ?? false;
         if (array_key_exists($name, $providedParameters)) {
             // Found the dependency by name in providedParameters
             return $providedParameters[$name];
@@ -235,21 +235,23 @@ class Injector implements InjectorInterface
             // Found the dependency index in providedParameters
             return $providedParameters[$position];
         }
-        if ($type && array_key_exists($type, $providedParameters)) {
-            // Found the dependency by type in providedParameters
-            return $providedParameters[$type];
-        }
-        if ($type && $this->container->has($type)) {
-            // Found the dependency by type in the container
-            return $this->container->get($type);
+        if ($type) {
+            if (array_key_exists($type, $providedParameters)) {
+                // Found the dependency by type in providedParameters
+                return $providedParameters[$type];
+            }
+            if ($this->container->has($type)) {
+                // Found the dependency by type in the container
+                return $this->container->get($type);
+            }
+            if ($this->canAutoCreate($type)) {
+                // Auto create white list - recursion
+                return $this->create($type);
+            }
         }
         if (array_key_exists("default", $parameterData)) {
-            //Default value defined in signature
+            // Default value defined in signature
             return $parameterData['default'];
-        }
-        if ($this->canAutoCreate($type)) {
-            //Auto create white list - recursion
-            return $this->create($type);
         }
         throw new MissingRequiredParameterException(
             $name,
