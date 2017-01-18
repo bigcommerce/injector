@@ -4,8 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "f1b9fad68de4e4cf4055fbfbafccb7e4",
-    "content-hash": "b48968d79b1ad3d6a9f4d5a8a1978c63",
+    "content-hash": "e5873c225069bb1f7eb558df049dfc23",
     "packages": [
         {
             "name": "container-interop/container-interop",
@@ -32,7 +31,7 @@
                 "MIT"
             ],
             "description": "Promoting the interoperability of container objects (DIC, SL, etc.)",
-            "time": "2014-12-30 15:22:37"
+            "time": "2014-12-30T15:22:37+00:00"
         },
         {
             "name": "ocramius/package-versions",
@@ -80,7 +79,7 @@
                 }
             ],
             "description": "Composer plugin that provides efficient querying for installed package versions (no runtime IO)",
-            "time": "2016-12-30 09:49:15"
+            "time": "2016-12-30T09:49:15+00:00"
         },
         {
             "name": "ocramius/proxy-manager",
@@ -396,7 +395,7 @@
                 "object",
                 "object graph"
             ],
-            "time": "2016-10-31 17:19:45"
+            "time": "2016-10-31T17:19:45+00:00"
         },
         {
             "name": "phpdocumentor/reflection-common",
@@ -495,7 +494,7 @@
                 }
             ],
             "description": "With this component, a library can provide support for annotations via DocBlocks or otherwise retrieve information that is embedded in a DocBlock.",
-            "time": "2016-09-30 07:12:33"
+            "time": "2016-09-30T07:12:33+00:00"
         },
         {
             "name": "phpdocumentor/type-resolver",
@@ -542,7 +541,7 @@
                     "email": "me@mikevanriel.com"
                 }
             ],
-            "time": "2016-11-25 06:54:22"
+            "time": "2016-11-25T06:54:22+00:00"
         },
         {
             "name": "phpspec/prophecy",
@@ -756,7 +755,7 @@
             "keywords": [
                 "template"
             ],
-            "time": "2015-06-21 13:50:34"
+            "time": "2015-06-21T13:50:34+00:00"
         },
         {
             "name": "phpunit/php-timer",
@@ -800,7 +799,7 @@
             "keywords": [
                 "timer"
             ],
-            "time": "2016-05-12 18:03:57"
+            "time": "2016-05-12T18:03:57+00:00"
         },
         {
             "name": "phpunit/php-token-stream",
@@ -857,12 +856,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "6a251e7311b2936377388485a82bbc324baf9835"
+                "reference": "2054a7e19aced8a0e48cd3df88781cd9410194a6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/6a251e7311b2936377388485a82bbc324baf9835",
-                "reference": "6a251e7311b2936377388485a82bbc324baf9835",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/2054a7e19aced8a0e48cd3df88781cd9410194a6",
+                "reference": "2054a7e19aced8a0e48cd3df88781cd9410194a6",
                 "shasum": ""
             },
             "require": {
@@ -931,7 +930,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2017-01-17 18:27:01"
+            "time": "2017-01-18T03:54:00+00:00"
         },
         {
             "name": "phpunit/phpunit-mock-objects",
