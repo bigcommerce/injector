@@ -3,6 +3,7 @@ namespace Tests;
 
 use Bigcommerce\Injector\Injector;
 use Bigcommerce\Injector\ServiceProvider\BindingClosureFactory;
+use PHPUnit\Framework\TestCase;
 use Pimple\Container;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
@@ -11,7 +12,7 @@ use Prophecy\Prophecy\ObjectProphecy;
  *
  * @coversDefaultClass Bigcommerce\Injector\InjectorServiceProvider
  */
-class InjectorServiceProviderTest extends \PHPUnit_Framework_TestCase
+class InjectorServiceProviderTest extends TestCase
 {
     /** @var Injector|ObjectProphecy */
     private $injector;

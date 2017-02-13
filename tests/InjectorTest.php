@@ -6,7 +6,7 @@ use Bigcommerce\Injector\Exception\InjectorInvocationException;
 use Bigcommerce\Injector\Injector;
 use Bigcommerce\Injector\Reflection\ParameterInspector;
 use Interop\Container\ContainerInterface;
-use Pimple\Container;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ObjectProphecy;
 use Tests\Dummy\DummyDependency;
 use Tests\Dummy\DummyNoConstructor;
@@ -18,7 +18,7 @@ use Tests\Dummy\DummySubDependency;
  *
  * @coversDefaultClass \Bigcommerce\Injector\Injector
  */
-class InjectorTest extends \PHPUnit_Framework_TestCase
+class InjectorTest extends TestCase
 {
     /**
      * @var ContainerInterface|ObjectProphecy

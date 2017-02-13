@@ -3,6 +3,7 @@ namespace Tests\ServiceProvider;
 
 use Bigcommerce\Injector\Injector;
 use Bigcommerce\Injector\ServiceProvider\BindingClosureFactory;
+use PHPUnit\Framework\TestCase;
 use Pimple\Container;
 use Prophecy\Prophecy\ObjectProphecy;
 use ProxyManager\Factory\LazyLoadingValueHolderFactory;
@@ -12,7 +13,7 @@ use ProxyManager\Proxy\ValueHolderInterface;
  *
  * @coversDefaultClass \Bigcommerce\Injector\ServiceProvider\BindingClosureFactory
  */
-class BindingClosureFactoryTest extends \PHPUnit_Framework_TestCase
+class BindingClosureFactoryTest extends TestCase
 {
     /** @var Injector|ObjectProphecy */
     private $injector;
