@@ -4,6 +4,7 @@ namespace Tests\Reflection;
 use Bigcommerce\Injector\Cache\ArrayServiceCache;
 use Bigcommerce\Injector\Cache\ServiceCacheInterface;
 use Bigcommerce\Injector\Reflection\ParameterInspector;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ObjectProphecy;
 use Tests\Dummy\MagicCallDummy;
 
@@ -11,7 +12,7 @@ use Tests\Dummy\MagicCallDummy;
  *
  * @coversDefaultClass \Bigcommerce\Injector\Reflection\ParameterInspector
  */
-class ParameterInspectorTest extends \PHPUnit_Framework_TestCase
+class ParameterInspectorTest extends TestCase
 {
     /** @var ObjectProphecy|ServiceCacheInterface */
     private $cache;

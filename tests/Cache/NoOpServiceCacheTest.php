@@ -2,12 +2,13 @@
 namespace Tests\Cache;
 
 use Bigcommerce\Injector\Cache\NoOpServiceCache;
+use PHPUnit\Framework\TestCase;
 
 /**
  *
  * @coversDefaultClass Bigcommerce\Injector\Cache\NoOpServiceCache
  */
-class NoOpServiceCacheTest extends \PHPUnit_Framework_TestCase
+class NoOpServiceCacheTest extends TestCase
 {
     /**
      * @covers ::get

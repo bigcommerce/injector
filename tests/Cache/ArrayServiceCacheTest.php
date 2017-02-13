@@ -2,12 +2,13 @@
 namespace Tests\Cache;
 
 use Bigcommerce\Injector\Cache\ArrayServiceCache;
+use PHPUnit\Framework\TestCase;
 
 /**
  *
  * @coversDefaultClass \Bigcommerce\Injector\Cache\ArrayServiceCache
  */
-class ArrayServiceCacheTest extends \PHPUnit_Framework_TestCase
+class ArrayServiceCacheTest extends TestCase
 {
     /**
      * @covers ::get

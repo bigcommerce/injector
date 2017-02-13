@@ -3,13 +3,14 @@ namespace tests\Adapter;
 
 use Bigcommerce\Injector\Adapter\ArrayContainerAdapter;
 use Bigcommerce\Injector\Adapter\Exception\ServiceNotFoundException;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Class ArrayContainerAdapterTest
  * @package tests\Adapter
  * @coversDefaultClass Bigcommerce\Injector\Adapter\ArrayContainerAdapter
  */
-class ArrayContainerAdapterTest extends \PHPUnit_Framework_TestCase
+class ArrayContainerAdapterTest extends TestCase
 {
     public function testHappy()
     {
