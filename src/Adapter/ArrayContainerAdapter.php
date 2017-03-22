@@ -5,7 +5,6 @@ use Bigcommerce\Injector\Adapter\Exception\ServiceNotFoundException;
 use Interop\Container\ContainerInterface;
 use Interop\Container\Exception\ContainerException;
 use Interop\Container\Exception\NotFoundException;
-use Pimple\Container;
 
 /**
  * Adapt a simple array container (i.e Pimple) to ContainerInterop Interface
@@ -14,7 +13,7 @@ use Pimple\Container;
 class ArrayContainerAdapter implements ContainerInterface
 {
     /**
-     * @var array
+     * @var array|\ArrayAccess
      */
     private $arrayContainer;
 
