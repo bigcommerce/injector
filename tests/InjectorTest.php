@@ -12,7 +12,10 @@ use Tests\Dummy\DummyDependency;
 use Tests\Dummy\DummyNoConstructor;
 use Tests\Dummy\DummyPrivateConstructor;
 use Tests\Dummy\DummySimpleConstructor;
+use Tests\Dummy\DummyString;
 use Tests\Dummy\DummySubDependency;
+use Tests\Dummy\DummyVariadicConstructor;
+use TypeError;
 
 /**
  *
@@ -98,6 +101,84 @@ class InjectorTest extends TestCase
         $this->assertSame($dummyDependency, $instance->getDummyDependency());
         $this->assertEquals("bob", $instance->getName());
         $this->assertEquals(25, $instance->getAge());
+        $this->assertEmpty($instance->getArgs());
+    }
+
+    public function testCreateVariadicParameterShouldNotSourceFromContainer()
+    {
+        $this->mockDummyVariadicSignature();
+
+        $hello = new DummyString('hello');
+        $this->container->has(DummyString::class)->willReturn(true);
+        $this->container->get(DummyString::class)->willReturn($hello);
+
+        $injector = new Injector($this->container->reveal(), $this->inspector->reveal());
+        $instance = $injector->create(DummyVariadicConstructor::class);
+
+        $this->assertEmpty($instance->getArgs());
+    }
+
+    public function testCreateVariadicParameterOnly()
+    {
+        $this->mockDummyVariadicSignature();
+
+        $hello = new DummyString('hello');
+        $world = new DummyString('world');
+
+        $injector = new Injector($this->container->reveal(), $this->inspector->reveal());
+        $instance = $injector->create(
+            DummyVariadicConstructor::class,
+            [
+                $hello,
+                $world,
+            ]
+        );
+
+        $this->assertEquals([$hello, $world], $instance->getArgs());
+    }
+
+    public function testCreateBothNormalAndVariadicParameters()
+    {
+        $cacheMock = $this->prophesize(ServiceCacheInterface::class)->reveal();
+        $dummyDependency = new DummyDependency(new DummySubDependency());
+        $this->mockDummySimpleSignature();
+
+        $injector = new Injector($this->container->reveal(), $this->inspector->reveal());
+        $instance = $injector->create(
+            DummySimpleConstructor::class,
+            [
+                "cache" => $cacheMock, //Parameter Name
+                DummyDependency::class => $dummyDependency, //Parameter Type
+                2 => "bob", //Parameter Index
+                3 => 10, //Prameter Index
+                'hello', //Variadic
+                'world',
+            ]
+        );
+
+        $this->assertSame($cacheMock, $instance->getCache());
+        $this->assertSame($dummyDependency, $instance->getDummyDependency());
+        $this->assertEquals("bob", $instance->getName());
+        $this->assertEquals(10, $instance->getAge());
+        $this->assertEquals(['hello', 'world'], $instance->getArgs());
+    }
+
+    public function testCreateVariadicParameterConsumesAllUnusedProvidedParameters()
+    {
+        $this->mockDummyVariadicSignature();
+        $hello = new DummyString('hello');
+        $injector = new Injector($this->container->reveal(), $this->inspector->reveal());
+
+        $this->expectException(TypeError::class);
+        $instance = $injector->create(
+            DummyVariadicConstructor::class,
+            [
+                $hello,
+                // parameter that is not declared on method signature and when piped
+                // to variadic parameter should cause type error
+                'ghostParameter' => 11,
+            ]
+        );
     }
 
     /**
@@ -319,6 +400,18 @@ class InjectorTest extends TestCase
                 ["name" => "dummyDependency", "type" => DummyDependency::class],
                 ["name" => "name"],
                 ["name" => "age", "default" => 25],
+                ["name" => "args", "variadic" => true],
+            ]
+        );
+    }
+
+    private function mockDummyVariadicSignature()
+    {
+        $this->mockInspectorSignatureByReflectionClass(
+            DummyVariadicConstructor::class,
+            "__construct",
+            [
+                ["name" => "args", "variadic" => true],
             ]
         );
     }

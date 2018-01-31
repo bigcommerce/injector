@@ -204,7 +204,16 @@ class Injector implements InjectorInterface
     {
         $parameters = [];
         foreach ($methodSignature as $position => $parameterData) {
-            $parameters[$position] = $this->resolveParameter($position, $parameterData, $providedParameters);
+            if (!isset($parameterData['variadic'])) {
+                $parameters[$position] = $this->resolveParameter($position, $parameterData, $providedParameters);
+            } else {
+                // variadic parameter must be the last one, so
+                // the rest of the provided paramters should be piped
+                // into it to mimic native php behaviour
+                foreach ($providedParameters as $variadicParameter) {
+                    $parameters[] = $variadicParameter;
+                }
+            }
         }
         return $parameters;
     }
@@ -223,22 +232,28 @@ class Injector implements InjectorInterface
      * @throws MissingRequiredParameterException
      * @return mixed The resolved parameter value
      */
-    private function resolveParameter($position, $parameterData, $providedParameters)
+    private function resolveParameter($position, $parameterData, &$providedParameters)
     {
         $name = $parameterData['name'];
         $type = $parameterData['type'] ?? false;
         if (array_key_exists($name, $providedParameters)) {
             // Found the dependency by name in providedParameters
-            return $providedParameters[$name];
+            $result = $providedParameters[$name];
+            unset($providedParameters[$name]);
+            return $result;
         }
         if (array_key_exists($position, $providedParameters)) {
             // Found the dependency index in providedParameters
-            return $providedParameters[$position];
+            $result = $providedParameters[$position];
+            unset($providedParameters[$position]);
+            return $result;
         }
         if ($type) {
             if (array_key_exists($type, $providedParameters)) {
                 // Found the dependency by type in providedParameters
-                return $providedParameters[$type];
+                $result = $providedParameters[$type];
+                unset($providedParameters[$type]);
+                return $result;
             }
             if ($this->container->has($type)) {
                 // Found the dependency by type in the container
