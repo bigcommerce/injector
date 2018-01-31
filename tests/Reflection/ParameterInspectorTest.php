@@ -92,6 +92,16 @@ class ParameterInspectorTest extends TestCase
         $this->assertEquals([], $signature);
     }
 
+    public function testGetSignatureVariadicParameter()
+    {
+        $ref = new ParameterInspector($this->cache->reveal());
+        $signature = $ref->getSignatureByClassName(self::class, "example4");
+        $this->assertEquals(
+            ["name" => "args", "variadic" => true],
+            $signature[0]
+        );
+    }
+
     public function testCacheHit()
     {
         $cacheSignature = [
@@ -129,6 +139,15 @@ class ParameterInspectorTest extends TestCase
      * @return void
      */
     private function example3()
+    {
+    }
+
+    /**
+     * THIS METHOD IS INSPECTED AS PART OF THIS TEST. DO NOT REMOVE
+     * No parameters
+     * @return void
+     */
+    private function example4(string ...$args)
     {
     }
 }

@@ -90,6 +90,9 @@ class ParameterInspector
                 if ($parameter->isDefaultValueAvailable()) {
                     $parameterSignature['default'] = $parameter->getDefaultValue();
                 }
+                if ($parameter->isVariadic()) {
+                    $parameterSignature['variadic'] = true;
+                }
 
                 $methodSignature[] = $parameterSignature;
             }

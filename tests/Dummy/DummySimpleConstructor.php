@@ -26,19 +26,28 @@ class DummySimpleConstructor
     private $age;
 
     /**
+     * @var string[]
+     */
+    private $args;
+
+    /**
      * DummySimpleConstructor constructor.
      * @param ServiceCacheInterface $cache
      * @param DummyDependency $dummyDependency
      * @param string $name
      * @param int $age
+     * @param string ...$args
      */
-    public function __construct(ServiceCacheInterface $cache, DummyDependency $dummyDependency, $name, $age = 25)
+    public function __construct(ServiceCacheInterface $cache, DummyDependency $dummyDependency, $name, $age = 25, string ...$args)
     {
 
         $this->cache = $cache;
         $this->dummyDependency = $dummyDependency;
         $this->name = $name;
         $this->age = $age;
+        foreach ($args as $arg) {
+            $this->args[] = $arg;
+        }
     }
 
     /**
@@ -71,5 +80,13 @@ class DummySimpleConstructor
     public function getName()
     {
         return $this->name;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getArgs()
+    {
+        return $this->args;
     }
 }
