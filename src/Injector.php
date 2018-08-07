@@ -4,7 +4,7 @@ namespace Bigcommerce\Injector;
 use Bigcommerce\Injector\Exception\InjectorInvocationException;
 use Bigcommerce\Injector\Exception\MissingRequiredParameterException;
 use Bigcommerce\Injector\Reflection\ParameterInspector;
-use Interop\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 
 /**
  * The Injector provides instantiation of objects (or invocation of methods) within the BC application and
