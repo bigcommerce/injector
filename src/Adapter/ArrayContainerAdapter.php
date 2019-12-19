@@ -2,9 +2,9 @@
 namespace Bigcommerce\Injector\Adapter;
 
 use Bigcommerce\Injector\Adapter\Exception\ServiceNotFoundException;
-use Interop\Container\ContainerInterface;
-use Interop\Container\Exception\ContainerException;
-use Interop\Container\Exception\NotFoundException;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 /**
  * Adapt a simple array container (i.e Pimple) to ContainerInterop Interface
@@ -31,8 +31,8 @@ class ArrayContainerAdapter implements ContainerInterface
      *
      * @param string $id Identifier of the entry to look for.
      *
-     * @throws NotFoundException  No entry was found for this identifier.
-     * @throws ContainerException Error while retrieving the entry.
+     * @throws NotFoundExceptionInterface  No entry was found for this identifier.
+     * @throws ContainerExceptionInterface Error while retrieving the entry.
      *
      * @return mixed Entry.
      */
