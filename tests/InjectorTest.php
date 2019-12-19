@@ -33,7 +33,7 @@ class InjectorTest extends TestCase
      */
     private $inspector;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->container = $this->prophesize(ContainerInterface::class);
