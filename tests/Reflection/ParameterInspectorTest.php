@@ -17,7 +17,7 @@ class ParameterInspectorTest extends TestCase
     /** @var ObjectProphecy|ServiceCacheInterface */
     private $cache;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->cache = $this->prophesize(ArrayServiceCache::class);

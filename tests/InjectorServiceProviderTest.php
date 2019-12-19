@@ -23,7 +23,7 @@ class InjectorServiceProviderTest extends TestCase
     /** @var BindingClosureFactory|ObjectProphecy */
     private $closureFactory;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->injector = $this->prophesize(Injector::class);

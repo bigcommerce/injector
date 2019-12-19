@@ -1,9 +1,9 @@
 <?php
 namespace Bigcommerce\Injector\Adapter\Exception;
 
-use Interop\Container\Exception\NotFoundException;
+use Psr\Container\NotFoundExceptionInterface;
 
-class ServiceNotFoundException extends \Exception implements NotFoundException
+class ServiceNotFoundException extends \Exception implements NotFoundExceptionInterface
 {
 
 }

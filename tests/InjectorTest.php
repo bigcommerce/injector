@@ -5,9 +5,9 @@ use Bigcommerce\Injector\Cache\ServiceCacheInterface;
 use Bigcommerce\Injector\Exception\InjectorInvocationException;
 use Bigcommerce\Injector\Injector;
 use Bigcommerce\Injector\Reflection\ParameterInspector;
-use Interop\Container\ContainerInterface;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ObjectProphecy;
+use Psr\Container\ContainerInterface;
 use Tests\Dummy\DummyDependency;
 use Tests\Dummy\DummyNoConstructor;
 use Tests\Dummy\DummyPrivateConstructor;
@@ -33,7 +33,7 @@ class InjectorTest extends TestCase
      */
     private $inspector;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->container = $this->prophesize(ContainerInterface::class);
