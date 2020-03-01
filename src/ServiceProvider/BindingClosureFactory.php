@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
+
 namespace Bigcommerce\Injector\ServiceProvider;
 
 use Bigcommerce\Injector\InjectorInterface;
@@ -67,6 +68,28 @@ class BindingClosureFactory
             $serviceFactory = $this->createAutoWireClosure($className, $parameterFactory);
             return $this->createProxy($className, $serviceFactory, $app);
         };
+    }
+
+    /**
+     * Create a proxy for an existing service definition. As opposed to autowired proxy definitions which are defined
+     * by the service itself, these proxies are defined by the client allowing clients to request proxied versions of
+     * otherwise non-lazy service definitions.
+     * This is preferable for services that should otherwise be initialised on construction (for example, those with
+     * complex dependency graphs that should normally be covered by service definition tests).
+     * @param Container $app
+     * @param string $serviceName The name of the service in the container.
+     * @param string $serviceClassName The FQCN of the service being proxied
+     * @return \ProxyManager\Proxy\VirtualProxyInterface
+     */
+    public function createServiceProxy(Container $app, string $serviceName, string $serviceClassName)
+    {
+        return $this->createProxy(
+            $serviceClassName,
+            function () use ($serviceName, $app) {
+                return $app->offsetGet($serviceName);
+            },
+            $app
+        );
     }
 
     /**
