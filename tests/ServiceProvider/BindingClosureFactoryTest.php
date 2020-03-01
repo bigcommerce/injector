@@ -1,4 +1,5 @@
 <?php
+
 namespace Tests\ServiceProvider;
 
 use Bigcommerce\Injector\Injector;
@@ -8,6 +9,7 @@ use Pimple\Container;
 use Prophecy\Prophecy\ObjectProphecy;
 use ProxyManager\Factory\LazyLoadingValueHolderFactory;
 use ProxyManager\Proxy\ValueHolderInterface;
+use ProxyManager\Proxy\VirtualProxyInterface;
 
 /**
  *
@@ -83,5 +85,49 @@ class BindingClosureFactoryTest extends TestCase
         $proxy = $closure($this->container->reveal());
 
         $this->assertEquals("bob", $proxy->getName());
+    }
+
+    /**
+     * Integration test - creates real proxies (using ocramius/proxy-manager) around service definitions
+     * @return void
+     */
+    public function testCreateServiceProxy()
+    {
+        $closureFactory = new BindingClosureFactory(new LazyLoadingValueHolderFactory(), $this->injector->reveal());
+
+        $proxy = $closureFactory->createServiceProxy($this->container->reveal(), 'lazy.dummy', LazyDummy::class);
+
+        // Dummy service being proxied
+        $this->container->offsetGet('lazy.dummy')->willReturn(new LazyDummy('Adam'));
+
+        // We have a proxy
+        $this->assertInstanceOf(VirtualProxyInterface::class, $proxy);
+        $this->assertFalse($proxy->isProxyInitialized());
+        // And it proxies the service in the container
+        $this->assertEquals("Adam", $proxy->getName());
+        $this->assertTrue($proxy->isProxyInitialized());
+    }
+
+    /**
+     * Integration test - creates real proxies (using ocramius/proxy-manager) around service definitions
+     * @return void
+     */
+    public function testCreateServiceProxyFailsOnInvalidType()
+    {
+        $closureFactory = new BindingClosureFactory(new LazyLoadingValueHolderFactory(), $this->injector->reveal());
+
+        $proxy = $closureFactory->createServiceProxy($this->container->reveal(), 'not.this.class', self::class);
+
+        // Dummy service which isn't an instance of expected self::class
+        $this->container->offsetGet('not.this.class')->willReturn(new LazyDummy('Wrong dummy'));
+
+        // We have a proxy
+        $this->assertInstanceOf(VirtualProxyInterface::class, $proxy);
+        $this->assertFalse($proxy->isProxyInitialized());
+
+        // And it proxies the service in the container
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("Invalid proxied/lazy service definition");
+        $proxy->getName();
     }
 }

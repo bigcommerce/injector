@@ -85,7 +85,7 @@ class BindingClosureFactory
     {
         return $this->createProxy(
             $serviceClassName,
-            function () use ($app, $serviceName, $serviceClassName) {
+            function (Container $app) use ($serviceName, $serviceClassName) {
                 $service = $app->offsetGet($serviceName);
                 if (! ($service instanceof $serviceClassName)) {
                     $invalidClassName = get_class($service);
