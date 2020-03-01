@@ -85,8 +85,18 @@ class BindingClosureFactory
     {
         return $this->createProxy(
             $serviceClassName,
-            function () use ($serviceName, $app) {
-                return $app->offsetGet($serviceName);
+            function () use ($app, $serviceName, $serviceClassName) {
+                $service = $app->offsetGet($serviceName);
+                if (! ($service instanceof $serviceClassName)) {
+                    $invalidClassName = get_class($service);
+                    throw new \RuntimeException(
+                        "Invalid proxied/lazy service definition: tried to proxy '$serviceName' as an instance ".
+                        "of '$serviceClassName', but actually received an instance of '$invalidClassName' when retrieving ".
+                        "'$serviceName' from the container. To fix this, find the '\$this->getLazy($serviceName)' service ".
+                        "binding and make sure it specifies the actual class name that will be returned by that service."
+                    );
+                }
+                return $service;
             },
             $app
         );
