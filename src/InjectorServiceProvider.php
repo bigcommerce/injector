@@ -66,14 +66,14 @@ abstract class InjectorServiceProvider implements ServiceProviderInterface
     /**
      * Retrieve a lazy proxy of a service definition. Proxies will mirror the interface of the service requested,
      * but wont instantiate that service (and it's dependencies) until a method on that interface is called.
-     * @param string $id
-     * @param string $className
+     * @param string $className FQCN of the class being proxied
+     * @param string $id Container service ID. Optional if the service name matches the class name.
      * @return object|VirtualProxyInterface
      */
-    protected function getLazy(string $id, string $className = '')
+    protected function getLazy(string $className, string $id = '')
     {
-        if (!$className) {
-            $className = $id;
+        if (!$id) {
+            $id = $className;
         }
         return $this->closureFactory->createServiceProxy($this->container, $id, $className);
     }
