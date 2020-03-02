@@ -1,9 +1,11 @@
 <?php
+
 namespace Bigcommerce\Injector;
 
 use Bigcommerce\Injector\ServiceProvider\BindingClosureFactory;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
+use ProxyManager\Proxy\VirtualProxyInterface;
 
 abstract class InjectorServiceProvider implements ServiceProviderInterface
 {
@@ -51,10 +53,10 @@ abstract class InjectorServiceProvider implements ServiceProviderInterface
     /**
      * Shortcut alias for Container::offsetGet()
      *
-     * @see Container::offsetGet()
      * @param string $id
      * @return mixed
      * @throws \InvalidArgumentException if the identifier is not defined
+     * @see Container::offsetGet()
      */
     protected function get($id)
     {
@@ -62,12 +64,27 @@ abstract class InjectorServiceProvider implements ServiceProviderInterface
     }
 
     /**
+     * Retrieve a lazy proxy of a service definition. Proxies will mirror the interface of the service requested,
+     * but wont instantiate that service (and it's dependencies) until a method on that interface is called.
+     * @param string $className FQCN of the class being proxied
+     * @param string $id Container service ID. Optional if the service name matches the class name.
+     * @return object|VirtualProxyInterface
+     */
+    protected function getLazy(string $className, string $id = '')
+    {
+        if (!$id) {
+            $id = $className;
+        }
+        return $this->closureFactory->createServiceProxy($this->container, $id, $className);
+    }
+
+    /**
      * Alias for Injector::create()
-     * @see InjectorInterface::create()
      * @param string $className
      * @param array $parameters
      * @return object
      * @throws \Exception
+     * @see InjectorInterface::create()
      */
     protected function create($className, $parameters = [])
     {
@@ -78,11 +95,11 @@ abstract class InjectorServiceProvider implements ServiceProviderInterface
      * Shortcut for binding a service to the container. Every call to ::get for this service will receive the same
      * instance of the service.
      *
-     * @see Container::offsetSet()
      * @param string $id
      * @param callable|mixed $value
-     * @throws \Exception
      * @return void
+     * @throws \Exception
+     * @see Container::offsetSet()
      */
     protected function bind($id, $value)
     {
@@ -93,11 +110,11 @@ abstract class InjectorServiceProvider implements ServiceProviderInterface
      * Shortcut for binding a factory callable to the container. Every call to ::get for this service will receive a
      * new instance of this service
      *
-     * @see Container::factory()
      * @param string $id
      * @param callable $value
-     * @throws \Exception
      * @return void
+     * @throws \Exception
+     * @see Container::factory()
      */
     protected function bindFactory($id, callable $value)
     {
@@ -110,8 +127,8 @@ abstract class InjectorServiceProvider implements ServiceProviderInterface
      *
      * @param string $aliasKey
      * @param string $serviceKey
-     * @throws \InvalidArgumentException
      * @return void
+     * @throws \InvalidArgumentException
      */
     protected function alias($aliasKey, $serviceKey)
     {
@@ -173,8 +190,8 @@ abstract class InjectorServiceProvider implements ServiceProviderInterface
      * @param string $className FQCN of a class to auto-wire bind.
      * @param callable|null $parameterFactory Callable to generate parameters to inject to the service. Will receive
      * the IoC container as its first parameter.
-     * @throws \Exception
      * @return void
+     * @throws \Exception
      */
     protected function autoBind($className, callable $parameterFactory = null)
     {
@@ -191,8 +208,8 @@ abstract class InjectorServiceProvider implements ServiceProviderInterface
      * @param string $className FQCN of a class to auto-wire bind.
      * @param callable|null $parameterFactory Callable to generate parameters to inject to the service. Will receive
      * the IoC container as its first parameter.
-     * @throws \Exception
      * @return void
+     * @throws \Exception
      */
     protected function autoBindFactory($className, callable $parameterFactory = null)
     {
