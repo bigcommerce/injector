@@ -6,6 +6,7 @@ use Bigcommerce\Injector\Injector;
 use Bigcommerce\Injector\ServiceProvider\BindingClosureFactory;
 use PHPUnit\Framework\TestCase;
 use Pimple\Container;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use ProxyManager\Factory\LazyLoadingValueHolderFactory;
 use ProxyManager\Proxy\ValueHolderInterface;
@@ -17,6 +18,8 @@ use ProxyManager\Proxy\VirtualProxyInterface;
  */
 class BindingClosureFactoryTest extends TestCase
 {
+    use ProphecyTrait;
+
     /** @var Injector|ObjectProphecy */
     private $injector;
 

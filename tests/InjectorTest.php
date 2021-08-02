@@ -6,6 +6,7 @@ use Bigcommerce\Injector\Exception\InjectorInvocationException;
 use Bigcommerce\Injector\Injector;
 use Bigcommerce\Injector\Reflection\ParameterInspector;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Container\ContainerInterface;
 use Tests\Dummy\DummyDependency;
@@ -23,6 +24,8 @@ use TypeError;
  */
 class InjectorTest extends TestCase
 {
+    use ProphecyTrait;
+
     /**
      * @var ContainerInterface|ObjectProphecy
      */
@@ -56,7 +59,7 @@ class InjectorTest extends TestCase
     public function testCreatePrivateConstructor()
     {
         $this->expectException(InjectorInvocationException::class);
-        $this->expectExceptionMessageRegExp(
+        $this->expectExceptionMessageMatches(
             "/constructor isn't public/ims"
         );
         $injector = new Injector($this->container->reveal(), $this->inspector->reveal());
@@ -256,7 +259,7 @@ class InjectorTest extends TestCase
             'missing parameter \'\$dependency \[' . addslashes(DummySubDependency::class) . '\]\'',
             'Called when creating ' . addslashes(DummySimpleConstructor::class)
         ];
-        $this->expectExceptionMessageRegExp("/.*?" . implode(".*?", $messageContains) . ".*?/ims");
+        $this->expectExceptionMessageMatches("/.*?" . implode(".*?", $messageContains) . ".*?/ims");
         $cacheMock = $this->prophesize(ServiceCacheInterface::class)->reveal();
 
         $this->mockDummySimpleSignature();
@@ -278,7 +281,7 @@ class InjectorTest extends TestCase
     public function testCreateMissingParameter()
     {
         $this->expectException(InjectorInvocationException::class);
-        $this->expectExceptionMessageRegExp(
+        $this->expectExceptionMessageMatches(
             '/missing parameter \'\$cache \[' . addslashes(ServiceCacheInterface::class) . '\]\'/ims'
         );
         $this->mockDummySimpleSignature();
@@ -333,7 +336,7 @@ class InjectorTest extends TestCase
             'Can\'t invoke method ' . addslashes(DummyNoConstructor::class) . '::setAge',
             'missing parameter \'\$age\''
         ];
-        $this->expectExceptionMessageRegExp("/" . implode(".*?", $messageContains) . "/ims");
+        $this->expectExceptionMessageMatches("/" . implode(".*?", $messageContains) . "/ims");
         $this->mockInspectorSignatureByClassName(
             DummyNoConstructor::class,
             "setAge",
@@ -357,7 +360,7 @@ class InjectorTest extends TestCase
         $messageContains = [
             'Failed to invoke ' . addslashes(DummyNoConstructor::class) . '::setName - method doesn\'t exist.'
         ];
-        $this->expectExceptionMessageRegExp("/" . implode(".*?", $messageContains) . "/ims");
+        $this->expectExceptionMessageMatches("/" . implode(".*?", $messageContains) . "/ims");
         $this->inspector->getSignatureByClassName(DummyNoConstructor::class, "setName")->willThrow(
             new \ReflectionException("bad stuff")
         );

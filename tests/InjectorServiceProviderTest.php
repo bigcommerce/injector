@@ -6,6 +6,7 @@ use Bigcommerce\Injector\ServiceProvider\BindingClosureFactory;
 use PHPUnit\Framework\TestCase;
 use Pimple\Container;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 
 /**
@@ -14,6 +15,8 @@ use Prophecy\Prophecy\ObjectProphecy;
  */
 class InjectorServiceProviderTest extends TestCase
 {
+    use ProphecyTrait;
+
     /** @var Injector|ObjectProphecy */
     private $injector;
 
