@@ -9,7 +9,9 @@ workflows:
   full:
     jobs:
       - php/phpunit-tests:
-          configuration: "phpunit.xml.dist"
+          e:
+            name: php/php
+            php-version: <<matrix.php-version>>
           matrix:
             parameters:
               php-version: [ "7.4-fpm", "8.0-fpm" ]
