@@ -117,6 +117,16 @@ class ParameterInspectorTest extends TestCase
         $this->assertEquals($cacheSignature, $signature);
     }
 
+    public function testGetSignatureNullableParameter()
+    {
+        $ref = new ParameterInspector($this->cache->reveal());
+        $signature = $ref->getSignatureByClassName(self::class, "example5");
+        $this->assertEquals(
+            ["name" => "args", "type" => "stdClass", "default"=>null],
+            $signature[0]
+        );
+    }
+
     /**
      * THIS METHOD IS INSPECTED AS PART OF THIS TEST. DO NOT REMOVE
      * @param ArrayServiceCache $cache
@@ -151,6 +161,14 @@ class ParameterInspectorTest extends TestCase
      * @return void
      */
     private function example4(string ...$args)
+    {
+    }
+
+    /**
+     * THIS METHOD IS INSPECTED AS PART OF THIS TEST. DO NOT REMOVE
+     * @return void
+     */
+    private function example5(?\stdClass $args)
     {
     }
 }

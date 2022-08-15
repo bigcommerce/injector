@@ -84,8 +84,12 @@ class ParameterInspector
                 $parameterSignature = [
                     "name" => $name
                 ];
-                if ($parameter->getType() && !$parameter->getType()->isBuiltin()) {
-                    $parameterSignature['type'] = $parameter->getType()->getName();
+                $type = $parameter->getType();
+                if ($type && !$type->isBuiltin()) {
+                    $parameterSignature['type'] = $type->getName();
+                    if ($parameter->allowsNull()) {
+                        $parameterSignature['default'] = null;
+                    }
                 }
                 if ($parameter->isDefaultValueAvailable()) {
                     $parameterSignature['default'] = $parameter->getDefaultValue();

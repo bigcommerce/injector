@@ -1,16 +1,21 @@
 <?php
+
 namespace Tests;
 
 use Bigcommerce\Injector\Cache\ServiceCacheInterface;
 use Bigcommerce\Injector\Exception\InjectorInvocationException;
 use Bigcommerce\Injector\Injector;
 use Bigcommerce\Injector\Reflection\ParameterInspector;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Container\ContainerInterface;
+use ReflectionClass;
+use ReflectionException;
 use Tests\Dummy\DummyDependency;
 use Tests\Dummy\DummyNoConstructor;
+use Tests\Dummy\DummyNullableParameterConstructor;
 use Tests\Dummy\DummyPrivateConstructor;
 use Tests\Dummy\DummySimpleConstructor;
 use Tests\Dummy\DummyString;
@@ -106,6 +111,31 @@ class InjectorTest extends TestCase
         $this->assertEquals(25, $instance->getAge());
         $this->assertEmpty($instance->getArgs());
     }
+
+    public function testCreateWithNullableParameters()
+    {
+        $this->mockInspectorSignatureByReflectionClass(
+            DummyNullableParameterConstructor::class,
+            "__construct",
+            [
+                ["name" => "cache", "type" => ServiceCacheInterface::class, "default" => null],
+                ["name" => "dummyDependency", "type" => DummyDependency::class]
+            ]
+        );
+
+        $dummyDependency = new DummyDependency(new DummySubDependency());
+
+        $injector = new Injector($this->container->reveal(), $this->inspector->reveal());
+        $instance = $injector->create(
+            DummyNullableParameterConstructor::class,
+            [
+                "dummyDependency" => $dummyDependency
+            ]
+        );
+        $this->assertNull($instance->getCache());
+        $this->assertSame($dummyDependency, $instance->getDummyDependency());
+    }
+
 
     public function testCreateVariadicParameterShouldNotSourceFromContainer()
     {
@@ -297,7 +327,7 @@ class InjectorTest extends TestCase
      */
     public function testInvokeOnNonObject()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Attempted Injector::invoke on a non-object: array.");
         $injector = new Injector($this->container->reveal(), $this->inspector->reveal());
         //We're intentionally passing the wrong type to invoke here to assert the failure.
@@ -362,7 +392,7 @@ class InjectorTest extends TestCase
         ];
         $this->expectExceptionMessageMatches("/" . implode(".*?", $messageContains) . "/ims");
         $this->inspector->getSignatureByClassName(DummyNoConstructor::class, "setName")->willThrow(
-            new \ReflectionException("bad stuff")
+            new ReflectionException("bad stuff")
         );
 
         $injector = new Injector($this->container->reveal(), $this->inspector->reveal());
@@ -422,7 +452,7 @@ class InjectorTest extends TestCase
     private function mockInspectorSignatureByReflectionClass($className, $methodName, $returns)
     {
         $this->inspector->getSignatureByReflectionClass(
-            new \ReflectionClass($className),
+            new ReflectionClass($className),
             $methodName
         )->willReturn($returns);
     }
