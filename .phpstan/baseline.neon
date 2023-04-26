@@ -21,16 +21,6 @@ parameters:
 			path: ../src/Adapter/ArrayContainerAdapter.php
 
 		-
-			message: "#^Method Bigcommerce\\\\Injector\\\\Cache\\\\ArrayServiceCache\\:\\:__construct\\(\\) has parameter \\$values with no value type specified in iterable type array\\.$#"
-			count: 1
-			path: ../src/Cache/ArrayServiceCache.php
-
-		-
-			message: "#^Property Bigcommerce\\\\Injector\\\\Cache\\\\ArrayServiceCache\\:\\:\\$values type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: ../src/Cache/ArrayServiceCache.php
-
-		-
 			message: "#^Parameter \\#2 \\$code of method Exception\\:\\:__construct\\(\\) expects int, null given\\.$#"
 			count: 1
 			path: ../src/Exception/InjectorInvocationException.php

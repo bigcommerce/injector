@@ -7,13 +7,12 @@ namespace Bigcommerce\Injector\Cache;
 class ArrayServiceCache implements ServiceCacheInterface
 {
     /**
-     * @var array
+     * @var array<string, string>
      */
     private $values = [];
 
     /**
-     * ArrayCache constructor.
-     * @param array $values
+     * @param array<string, string> $values
      */
     public function __construct($values = [])
     {
