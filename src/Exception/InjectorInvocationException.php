@@ -17,6 +17,6 @@ class InjectorInvocationException extends ServiceException
      */
     public function __construct($message, Exception $previous = null)
     {
-        parent::__construct($message, null, $previous);
+        parent::__construct($message, 0, $previous);
     }
 }

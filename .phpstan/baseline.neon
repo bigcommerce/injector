@@ -21,11 +21,6 @@ parameters:
 			path: ../src/Adapter/ArrayContainerAdapter.php
 
 		-
-			message: "#^Parameter \\#2 \\$code of method Exception\\:\\:__construct\\(\\) expects int, null given\\.$#"
-			count: 1
-			path: ../src/Exception/InjectorInvocationException.php
-
-		-
 			message: "#^Method Bigcommerce\\\\Injector\\\\Injector\\:\\:buildParameterArray\\(\\) has parameter \\$methodSignature with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: ../src/Injector.php
