@@ -5,6 +5,9 @@ orbs:
   php: bigcommerce/internal-php@volatile
 
 default_matrix: &default_matrix
+  e:
+    name: php/php
+    php-version: <<matrix.php-version>>
   matrix:
     parameters:
       php-version: [ "8.1", "8.2", "8.3" ]
@@ -15,6 +18,8 @@ workflows:
     jobs:
       - php/phpunit-tests:
           <<: *default_matrix
+          pecl_extensions: "pcov"
+          context: "GCR + Artifact Bucket Access"
       - php/static-analysis:
           <<: *default_matrix
           generate_ide_helper: false
