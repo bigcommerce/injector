@@ -131,6 +131,6 @@ class BindingClosureFactoryTest extends TestCase
         // And it proxies the service in the container
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage("Invalid proxied/lazy service definition");
-        $proxy->getName();
+        $proxy->name();
     }
 }
