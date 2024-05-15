@@ -1,8 +1,6 @@
 <?php
 namespace Bigcommerce\Injector\Reflection;
 
-use Bigcommerce\Injector\Cache\ServiceCacheInterface;
-
 /**
  * The ParameterInspector exposes cached reflection of a methods signature enabling auto-wiring of dependencies within
  * the Injector. This class does expose the \ReflectionParameter or utilise Parameter value objects but
@@ -14,20 +12,6 @@ use Bigcommerce\Injector\Cache\ServiceCacheInterface;
  */
 class ParameterInspector
 {
-    /**
-     * @var ServiceCacheInterface
-     */
-    private $cache;
-
-    /**
-     * ParameterInspector constructor.
-     * @param ServiceCacheInterface $cache
-     */
-    public function __construct(ServiceCacheInterface $cache)
-    {
-        $this->cache = $cache;
-    }
-
     /**
      * Fetch the method signature of a method when we have already created a \ReflectionClass
      * @param \ReflectionClass $reflectionClass
@@ -67,16 +51,11 @@ class ParameterInspector
     private function getMethodSignature($className, $methodName, \ReflectionClass $refClass = null)
     {
         $cacheKey = $className . "::" . $methodName;
-        $methodSignature = $this->cache->get($cacheKey);
-        if ($methodSignature) {
-            return $methodSignature;
-        }
         if (!$refClass) {
             $refClass = new \ReflectionClass($className);
         }
 
         $methodSignature = [];
-        $method = null;
         try {
             $method = $refClass->getMethod($methodName);
             foreach ($method->getParameters() as $parameter) {
@@ -102,7 +81,6 @@ class ParameterInspector
                 throw $e;
             }
         }
-        $this->cache->set($cacheKey, $methodSignature);
         return $methodSignature;
     }
 }

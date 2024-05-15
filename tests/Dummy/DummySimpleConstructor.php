@@ -1,14 +1,12 @@
 <?php
 namespace Tests\Dummy;
 
-use Bigcommerce\Injector\Cache\ServiceCacheInterface;
-
 class DummySimpleConstructor
 {
     /**
-     * @var ServiceCacheInterface
+     * @var DummyNoConstructor
      */
-    private $cache;
+    private $dummyNoConstructor;
 
     /**
      * @var DummyDependency
@@ -32,16 +30,15 @@ class DummySimpleConstructor
 
     /**
      * DummySimpleConstructor constructor.
-     * @param ServiceCacheInterface $cache
+     * @param DummyNoConstructor $dummyNoConstructor
      * @param DummyDependency $dummyDependency
      * @param string $name
      * @param int $age
      * @param string ...$args
      */
-    public function __construct(ServiceCacheInterface $cache, DummyDependency $dummyDependency, $name, $age = 25, string ...$args)
+    public function __construct(DummyNoConstructor $dummyNoConstructor, DummyDependency $dummyDependency, $name, $age = 25, string ...$args)
     {
-
-        $this->cache = $cache;
+        $this->dummyNoConstructor = $dummyNoConstructor;
         $this->dummyDependency = $dummyDependency;
         $this->name = $name;
         $this->age = $age;
@@ -51,11 +48,11 @@ class DummySimpleConstructor
     }
 
     /**
-     * @return ServiceCacheInterface
+     * @return DummyNoConstructor
      */
-    public function getCache()
+    public function getDummyNoConstructor()
     {
-        return $this->cache;
+        return $this->dummyNoConstructor;
     }
 
     /**

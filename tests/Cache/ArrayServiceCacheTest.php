@@ -38,6 +38,7 @@ class ArrayServiceCacheTest extends TestCase
         $cache->remove("test");
         $this->assertFalse($cache->get("test"));
     }
+
     public function testRemove()
     {
         $cache = new ArrayServiceCache();
@@ -45,5 +46,13 @@ class ArrayServiceCacheTest extends TestCase
         $this->assertEquals("Abc", $cache->get("test"));
         $cache->remove("test");
         $this->assertFalse($cache->get("test"));
+    }
+
+    public function testGetAll(): void
+    {
+        $cache = new ArrayServiceCache();
+        $cache->set("test1", 123);
+        $cache->set("test2", 456);
+        $this->assertEquals(['test1' => 123, 'test2' => 456], $cache->getAll());
     }
 }
