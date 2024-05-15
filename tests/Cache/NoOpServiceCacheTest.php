@@ -38,6 +38,7 @@ class NoOpServiceCacheTest extends TestCase
         $cache->remove("test");
         $this->assertFalse($cache->get("test"));
     }
+
     public function testRemove()
     {
         $cache = new NoOpServiceCache();

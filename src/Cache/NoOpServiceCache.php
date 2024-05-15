@@ -10,9 +10,9 @@ class NoOpServiceCache implements ServiceCacheInterface
      * Retrieve the value of a key in the cache.
      *
      * @param string $key
-     * @return string|false cached string value or false when key not present in a cache
+     * @return mixed|false cached string value or false when key not present in a cache
      */
-    public function get($key)
+    public function get(string $key): mixed
     {
         return false;
     }
@@ -21,10 +21,10 @@ class NoOpServiceCache implements ServiceCacheInterface
      * Save a key/value pair to the cache.
      *
      * @param string $key
-     * @param string $value
+     * @param mixed $value
      * @return void
      */
-    public function set($key, $value)
+    public function set(string $key, mixed $value): void
     {
         return;
     }
@@ -35,8 +35,13 @@ class NoOpServiceCache implements ServiceCacheInterface
      * @param string $key
      * @return void
      */
-    public function remove($key)
+    public function remove(string $key): void
     {
         return;
+    }
+
+    public function has($key): bool
+    {
+        return false;
     }
 }

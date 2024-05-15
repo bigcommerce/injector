@@ -1,11 +1,12 @@
 <?php
 namespace Tests;
 
-use Bigcommerce\Injector\Cache\ServiceCacheInterface;
 use Bigcommerce\Injector\Exception\InjectorInvocationException;
 use Bigcommerce\Injector\Injector;
+use Bigcommerce\Injector\Reflection\ClassInspector;
 use Bigcommerce\Injector\Reflection\ParameterInspector;
 use PHPUnit\Framework\TestCase;
+use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Container\ContainerInterface;
@@ -32,7 +33,7 @@ class InjectorTest extends TestCase
     private $container;
 
     /**
-     * @var ParameterInspector|ObjectProphecy
+     * @var ClassInspector|ObjectProphecy
      */
     private $inspector;
 
@@ -40,7 +41,7 @@ class InjectorTest extends TestCase
     {
         parent::setUp();
         $this->container = $this->prophesize(ContainerInterface::class);
-        $this->inspector = $this->prophesize(ParameterInspector::class);
+        $this->inspector = $this->prophesize(ClassInspector::class);
     }
 
     /**
@@ -48,6 +49,7 @@ class InjectorTest extends TestCase
      */
     public function testCreateNoConstructor()
     {
+        $this->inspector->classHasMethod(DummyNoConstructor::class, "__construct")->willReturn(false);
         $injector = new Injector($this->container->reveal(), $this->inspector->reveal());
         $instance = $injector->create(DummyNoConstructor::class);
         $this->assertInstanceOf(DummyNoConstructor::class, $instance);
@@ -58,6 +60,8 @@ class InjectorTest extends TestCase
      */
     public function testCreatePrivateConstructor()
     {
+        $this->inspector->classHasMethod(DummyPrivateConstructor::class, "__construct")->willReturn(true);
+        $this->inspector->methodIsPublic(DummyPrivateConstructor::class, "__construct")->willReturn(false);
         $this->expectException(InjectorInvocationException::class);
         $this->expectExceptionMessageMatches(
             "/constructor isn't public/ims"
@@ -85,22 +89,25 @@ class InjectorTest extends TestCase
      */
     public function testCreateFromParameters()
     {
-        $cacheMock = $this->prophesize(ServiceCacheInterface::class)->reveal();
+        // $this->inspector->classHasMethod(Argument::cetera())->willReturn(true);
+        // $this->inspector->methodIsPublic(Argument::cetera())->willReturn(true);
+        $dummyNoConstructor = $this->prophesize(DummyNoConstructor::class)->reveal();
         $dummyDependency = new DummyDependency(new DummySubDependency());
 
         $this->mockDummySimpleSignature();
 
         $injector = new Injector($this->container->reveal(), $this->inspector->reveal());
+        /** @var DummySimpleConstructor $instance */
         $instance = $injector->create(
             DummySimpleConstructor::class,
             [
-                "cache" => $cacheMock, //Parameter Name
+                "dummyNoConstructor" => $dummyNoConstructor, //Parameter Name
                 DummyDependency::class => $dummyDependency, //Parameter Type
                 2 => "bob" //Parameter Index
                 //Missing value - 'age' should use its default
             ]
         );
-        $this->assertSame($cacheMock, $instance->getCache());
+        $this->assertSame($dummyNoConstructor, $instance->getDummyNoConstructor());
         $this->assertSame($dummyDependency, $instance->getDummyDependency());
         $this->assertEquals("bob", $instance->getName());
         $this->assertEquals(25, $instance->getAge());
@@ -142,15 +149,16 @@ class InjectorTest extends TestCase
 
     public function testCreateBothNormalAndVariadicParameters()
     {
-        $cacheMock = $this->prophesize(ServiceCacheInterface::class)->reveal();
+        $dummyNoConstructor = $this->prophesize(DummyNoConstructor::class)->reveal();
         $dummyDependency = new DummyDependency(new DummySubDependency());
         $this->mockDummySimpleSignature();
 
         $injector = new Injector($this->container->reveal(), $this->inspector->reveal());
+        /** @var DummySimpleConstructor $instance */
         $instance = $injector->create(
             DummySimpleConstructor::class,
             [
-                "cache" => $cacheMock, //Parameter Name
+                "dummyNoConstructor" => $dummyNoConstructor, //Parameter Name
                 DummyDependency::class => $dummyDependency, //Parameter Type
                 2 => "bob", //Parameter Index
                 3 => 10, //Prameter Index
@@ -159,7 +167,7 @@ class InjectorTest extends TestCase
             ]
         );
 
-        $this->assertSame($cacheMock, $instance->getCache());
+        $this->assertSame($dummyNoConstructor, $instance->getDummyNoConstructor());
         $this->assertSame($dummyDependency, $instance->getDummyDependency());
         $this->assertEquals("bob", $instance->getName());
         $this->assertEquals(10, $instance->getAge());
@@ -191,27 +199,28 @@ class InjectorTest extends TestCase
      */
     public function testCreateFromContainer()
     {
-        $cacheMock = $this->prophesize(ServiceCacheInterface::class)->reveal();
+        $dummyNoConstructor = $this->prophesize(DummyNoConstructor::class)->reveal();
         $dummyDependency = new DummyDependency(new DummySubDependency());
 
         $this->mockDummySimpleSignature();
 
-        $this->container->has(ServiceCacheInterface::class)->willReturn(true);
-        $this->container->get(ServiceCacheInterface::class)->willReturn($cacheMock);
+        $this->container->has(DummyNoConstructor::class)->willReturn(true);
+        $this->container->get(DummyNoConstructor::class)->willReturn($dummyNoConstructor);
         $this->container->has(DummyDependency::class)->willReturn(true);
         $this->container->get(DummyDependency::class)->willReturn($dummyDependency);
 
         $injector = new Injector($this->container->reveal(), $this->inspector->reveal());
+        /** @var DummySimpleConstructor $instance */
         $instance = $injector->create(
             DummySimpleConstructor::class,
             [
-                //Missing value - 'cache' should come from container
+                //Missing value - 'dummyNoConstructor' should come from container
                 //Missing value - 'dummyDependency' should come from container
                 2 => "bob" //Parameter Index
                 //Missing value - 'age' should use its default
             ]
         );
-        $this->assertSame($cacheMock, $instance->getCache());
+        $this->assertSame($dummyNoConstructor, $instance->getDummyNoConstructor());
         $this->assertSame($dummyDependency, $instance->getDummyDependency());
         $this->assertEquals("bob", $instance->getName());
         $this->assertEquals(25, $instance->getAge());
@@ -224,7 +233,7 @@ class InjectorTest extends TestCase
      */
     public function testAutoCreate()
     {
-        $cacheMock = $this->prophesize(ServiceCacheInterface::class)->reveal();
+        $dummyNoConstructor = $this->prophesize(DummyNoConstructor::class)->reveal();
 
         $this->mockDummySimpleSignature();
         $this->mockDummyDependencySignature();
@@ -235,13 +244,13 @@ class InjectorTest extends TestCase
         $instance = $injector->create(
             DummySimpleConstructor::class,
             [
-                ServiceCacheInterface::class => $cacheMock,
+                DummyNoConstructor::class => $dummyNoConstructor,
                 //Missing value - 'dummyDependency' should come from auto-create
                 2 => "bob" //Parameter Index
                 //Missing value - 'age' should use its default
             ]
         );
-        $this->assertSame($cacheMock, $instance->getCache());
+        $this->assertSame($dummyNoConstructor, $instance->getDummyNoConstructor());
         $this->assertInstanceOf(DummyDependency::class, $instance->getDummyDependency());
         $this->assertEquals("bob", $instance->getName());
         $this->assertEquals(25, $instance->getAge());
@@ -260,7 +269,7 @@ class InjectorTest extends TestCase
             'Called when creating ' . addslashes(DummySimpleConstructor::class)
         ];
         $this->expectExceptionMessageMatches("/.*?" . implode(".*?", $messageContains) . ".*?/ims");
-        $cacheMock = $this->prophesize(ServiceCacheInterface::class)->reveal();
+        $dummyNoConstructor = $this->prophesize(DummyNoConstructor::class)->reveal();
 
         $this->mockDummySimpleSignature();
         $this->mockDummyDependencySignature();
@@ -270,7 +279,7 @@ class InjectorTest extends TestCase
         $instance = $injector->create(
             DummySimpleConstructor::class,
             [
-                ServiceCacheInterface::class => $cacheMock,
+                DummyNoConstructor::class => $dummyNoConstructor,
                 //Missing value - 'dummyDependency' should come from auto-create
                 2 => "bob" //Parameter Index
                 //Missing value - 'age' should use its default
@@ -282,7 +291,7 @@ class InjectorTest extends TestCase
     {
         $this->expectException(InjectorInvocationException::class);
         $this->expectExceptionMessageMatches(
-            '/missing parameter \'\$cache \[' . addslashes(ServiceCacheInterface::class) . '\]\'/ims'
+            '/missing parameter \'\$dummyNoConstructor \[' . addslashes(DummyNoConstructor::class) . '\]\'/ims'
         );
         $this->mockDummySimpleSignature();
 
@@ -361,7 +370,7 @@ class InjectorTest extends TestCase
             'Failed to invoke ' . addslashes(DummyNoConstructor::class) . '::setName - method doesn\'t exist.'
         ];
         $this->expectExceptionMessageMatches("/" . implode(".*?", $messageContains) . "/ims");
-        $this->inspector->getSignatureByClassName(DummyNoConstructor::class, "setName")->willThrow(
+        $this->inspector->getMethodSignature(DummyNoConstructor::class, "setName")->willThrow(
             new \ReflectionException("bad stuff")
         );
 
@@ -372,7 +381,11 @@ class InjectorTest extends TestCase
 
     private function mockDummyDependencySignature()
     {
-        $this->mockInspectorSignatureByReflectionClass(
+        $this->inspector->classHasMethod(DummyDependency::class,"__construct")
+            ->willReturn(true);
+        $this->inspector->methodIsPublic(DummyDependency::class,"__construct")
+            ->willReturn(true);
+        $this->mockInspectorSignatureByClassName(
             DummyDependency::class,
             "__construct",
             [
@@ -384,7 +397,11 @@ class InjectorTest extends TestCase
 
     private function mockDummySubDependencySignature()
     {
-        $this->mockInspectorSignatureByReflectionClass(
+        $this->inspector->classHasMethod(DummySubDependency::class,"__construct")
+            ->willReturn(true);
+        $this->inspector->methodIsPublic(DummySubDependency::class,"__construct")
+            ->willReturn(true);
+        $this->mockInspectorSignatureByClassName(
             DummySubDependency::class,
             "__construct",
             [
@@ -395,11 +412,15 @@ class InjectorTest extends TestCase
 
     private function mockDummySimpleSignature()
     {
-        $this->mockInspectorSignatureByReflectionClass(
+        $this->inspector->classHasMethod(DummySimpleConstructor::class,"__construct")
+            ->willReturn(true);
+        $this->inspector->methodIsPublic(DummySimpleConstructor::class,"__construct")
+            ->willReturn(true);
+        $this->mockInspectorSignatureByClassName(
             DummySimpleConstructor::class,
             "__construct",
             [
-                ["name" => "cache", "type" => ServiceCacheInterface::class],
+                ["name" => "dummyNoConstructor", "type" => DummyNoConstructor::class],
                 ["name" => "dummyDependency", "type" => DummyDependency::class],
                 ["name" => "name"],
                 ["name" => "age", "default" => 25],
@@ -410,7 +431,11 @@ class InjectorTest extends TestCase
 
     private function mockDummyVariadicSignature()
     {
-        $this->mockInspectorSignatureByReflectionClass(
+        $this->inspector->classHasMethod(DummyVariadicConstructor::class,"__construct")
+            ->willReturn(true);
+        $this->inspector->methodIsPublic(DummyVariadicConstructor::class,"__construct")
+            ->willReturn(true);
+        $this->mockInspectorSignatureByClassName(
             DummyVariadicConstructor::class,
             "__construct",
             [
@@ -419,17 +444,9 @@ class InjectorTest extends TestCase
         );
     }
 
-    private function mockInspectorSignatureByReflectionClass($className, $methodName, $returns)
-    {
-        $this->inspector->getSignatureByReflectionClass(
-            new \ReflectionClass($className),
-            $methodName
-        )->willReturn($returns);
-    }
-
     private function mockInspectorSignatureByClassName($className, $methodName, $returns)
     {
-        $this->inspector->getSignatureByClassName(
+        $this->inspector->getMethodSignature(
             $className,
             $methodName
         )->willReturn($returns);
