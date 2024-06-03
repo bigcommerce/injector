@@ -106,6 +106,11 @@ class ClassInspector
         return $methodSignature;
     }
 
+    public function getStats(): ClassInspectorStats
+    {
+        return $this->stats;
+    }
+
     /**
      * Gets a ReflectionClass instance for the given class name.
      *
