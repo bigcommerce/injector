@@ -40,6 +40,12 @@ class NoOpServiceCache implements ServiceCacheInterface
         return;
     }
 
+    /**
+     * Check if a key exists in the cache.
+     *
+     * @param string $key
+     * @return bool
+     */
     public function has(string $key): bool
     {
         return false;

@@ -12,12 +12,12 @@ use Traversable;
 class ArrayServiceCache implements ServiceCacheInterface, MultiGetCacheInterface, Countable
 {
     /**
-     * @var array<string, string>
+     * @var array<string, mixed>
      */
     private array $values;
 
     /**
-     * @param array<string, string> $values
+     * @param array<string, mixed> $values
      */
     public function __construct(array $values = [])
     {
@@ -28,7 +28,7 @@ class ArrayServiceCache implements ServiceCacheInterface, MultiGetCacheInterface
      * Retrieve the value of a key in the cache.
      *
      * @param string $key
-     * @return mixed cached string value or false when key not present in a cache
+     * @return mixed cached value or false when key not present in a cache
      */
     public function get(string $key): mixed
     {
@@ -64,16 +64,32 @@ class ArrayServiceCache implements ServiceCacheInterface, MultiGetCacheInterface
         unset($this->values[$key]);
     }
 
+    /**
+     * Check if a key exists in the cache.
+     *
+     * @param string $key
+     * @return bool
+     */
     public function has(string $key): bool
     {
         return isset($this->values[$key]);
     }
 
+    /**
+     * Retrieve all entries of the cache.
+     *
+     * @return array<string, mixed>
+     */
     public function getAll(): array
     {
         return $this->values;
     }
 
+    /**
+     * Count elements of the cache.
+     *
+     * @return int
+     */
     public function count(): int
     {
         return count($this->values);

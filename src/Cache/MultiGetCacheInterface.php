@@ -7,7 +7,9 @@ namespace Bigcommerce\Injector\Cache;
 interface MultiGetCacheInterface
 {
     /**
-     * @return array<string, string>
+     * Retrieve all entries of the cache.
+     *
+     * @return array<string, mixed>
      */
     public function getAll(): array;
 }

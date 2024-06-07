@@ -48,11 +48,45 @@ class ArrayServiceCacheTest extends TestCase
         $this->assertFalse($cache->get("test"));
     }
 
-    public function testGetAll(): void
+    public function testHasReturnsTrueForExistingKey(): void
+    {
+        $cache = new ArrayServiceCache();
+        $cache->set("test", "Abc");
+
+        $hasEntry = $cache->has("test");
+
+        $this->assertTrue($hasEntry);
+    }
+
+    public function testHasReturnsFalseForMissingKey(): void
+    {
+        $cache = new ArrayServiceCache();
+        $cache->set("test2", "Abc");
+
+        $hasEntry = $cache->has("test");
+
+        $this->assertFalse($hasEntry);
+    }
+
+    public function testCountChecksTheNumberOfEntries(): void
+    {
+        $cache = new ArrayServiceCache();
+        $cache->set("test1", "Abc");
+        $cache->set("test2", "Def");
+
+        $count = $cache->count();
+
+        $this->assertEquals(2, $count);
+    }
+
+    public function testGetAllRetrievesAllCacheEntries(): void
     {
         $cache = new ArrayServiceCache();
         $cache->set("test1", 123);
         $cache->set("test2", 456);
-        $this->assertEquals(['test1' => 123, 'test2' => 456], $cache->getAll());
+
+        $allEntries = $cache->getAll();
+
+        $this->assertEquals(['test1' => 123, 'test2' => 456], $allEntries);
     }
 }

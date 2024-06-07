@@ -28,6 +28,12 @@ interface ServiceCacheInterface
      */
     public function set(string $key, mixed $value);
 
+    /**
+     * Check if a key exists in the cache.
+     *
+     * @param string $key
+     * @return bool
+     */
     public function has(string $key): bool;
 
     /**
