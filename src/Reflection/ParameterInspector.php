@@ -50,7 +50,6 @@ class ParameterInspector
      */
     private function getMethodSignature($className, $methodName, \ReflectionClass $refClass = null)
     {
-        $cacheKey = $className . "::" . $methodName;
         if (!$refClass) {
             $refClass = new \ReflectionClass($className);
         }
