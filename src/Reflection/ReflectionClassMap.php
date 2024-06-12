@@ -24,8 +24,6 @@ class ReflectionClassMap implements Countable
     /**
      * @param ReflectionClass<object> $reflection
      * @return void
-     *
-     * @phpstan-param ReflectionClass<object> $reflection
      */
     public function put(ReflectionClass $reflection): void
     {

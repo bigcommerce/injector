@@ -1,23 +1,22 @@
 <?php
 namespace Bigcommerce\Injector\Cache;
 
-use ArrayIterator;
 use Countable;
-use IteratorAggregate;
-use Traversable;
 
 /**
  * In process, memory array service cache.
+ * @template T
+ * @implements MultiGetCacheInterface<T>
  */
 class ArrayServiceCache implements ServiceCacheInterface, MultiGetCacheInterface, Countable
 {
     /**
-     * @var array<string, mixed>
+     * @var array<string, T>
      */
     private array $values;
 
     /**
-     * @param array<string, mixed> $values
+     * @param array<string, T> $values
      */
     public function __construct(array $values = [])
     {
@@ -28,7 +27,7 @@ class ArrayServiceCache implements ServiceCacheInterface, MultiGetCacheInterface
      * Retrieve the value of a key in the cache.
      *
      * @param string $key
-     * @return mixed cached value or false when key not present in a cache
+     * @return T cached value or false when key not present in a cache
      */
     public function get(string $key): mixed
     {
@@ -42,7 +41,7 @@ class ArrayServiceCache implements ServiceCacheInterface, MultiGetCacheInterface
      * Save a key/value pair to the cache.
      *
      * @param string $key
-     * @param mixed $value
+     * @param T $value
      * @return void
      */
     public function set(string $key, mixed $value): void
@@ -78,7 +77,7 @@ class ArrayServiceCache implements ServiceCacheInterface, MultiGetCacheInterface
     /**
      * Retrieve all entries of the cache.
      *
-     * @return array<string, mixed>
+     * @return array<string, T>
      */
     public function getAll(): array
     {
