@@ -96,22 +96,7 @@ parameters:
 			path: ../src/Reflection/ParameterInspector.php
 
 		-
-			message: "#^Method Bigcommerce\\\\Injector\\\\Reflection\\\\ParameterInspector\\:\\:getMethodSignature\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: ../src/Reflection/ParameterInspector.php
-
-		-
-			message: "#^Method Bigcommerce\\\\Injector\\\\Reflection\\\\ParameterInspector\\:\\:getSignatureByClassName\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: ../src/Reflection/ParameterInspector.php
-
-		-
 			message: "#^Method Bigcommerce\\\\Injector\\\\Reflection\\\\ParameterInspector\\:\\:getSignatureByReflectionClass\\(\\) has parameter \\$reflectionClass with generic class ReflectionClass but does not specify its types\\: T$#"
-			count: 1
-			path: ../src/Reflection/ParameterInspector.php
-
-		-
-			message: "#^Method Bigcommerce\\\\Injector\\\\Reflection\\\\ParameterInspector\\:\\:getSignatureByReflectionClass\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: ../src/Reflection/ParameterInspector.php
 

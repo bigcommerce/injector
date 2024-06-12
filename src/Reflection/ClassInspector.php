@@ -89,7 +89,7 @@ class ClassInspector
      * @param string $class
      * @param class-string<T> $class
      * @param string $method
-     * @return array<string,mixed>
+     * @return array{'name': string, 'type'?: string, 'default'?: mixed, 'variadic'?: bool}[]
      * @throws ReflectionException
      */
     public function getMethodSignature(string $class, string $method): array

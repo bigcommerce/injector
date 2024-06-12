@@ -16,7 +16,7 @@ class ParameterInspector
      * Fetch the method signature of a method when we have already created a \ReflectionClass
      * @param \ReflectionClass $reflectionClass
      * @param string $methodName
-     * @return array
+     * @return array{'name': string, 'type'?: string, 'default'?: mixed, 'variadic'?: bool}[]
      * @throws \ReflectionException
      */
     public function getSignatureByReflectionClass(\ReflectionClass $reflectionClass, $methodName)
@@ -29,7 +29,7 @@ class ParameterInspector
      * Fetch the method signature of a method using its fully qualified class name, and method name.
      * @param string $className
      * @param string $methodName
-     * @return array
+     * @return array{'name': string, 'type'?: string, 'default'?: mixed, 'variadic'?: bool}[]
      * @throws \ReflectionException
      */
     public function getSignatureByClassName($className, $methodName)
@@ -45,7 +45,8 @@ class ParameterInspector
      * @param string $className Fully qualified class name
      * @param string $methodName Name of the method we're inspecting
      * @param \ReflectionClass $refClass Optional existing ReflectionClass for this class
-     * @return array The signature of this methods parameters as an array.
+     * @return array{'name': string, 'type'?: string, 'default'?: mixed, 'variadic'?: bool}[] The signature
+     * of this methods parameters as an array.
      * @throws \ReflectionException
      */
     private function getMethodSignature($className, $methodName, \ReflectionClass $refClass = null)
