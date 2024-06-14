@@ -8,7 +8,7 @@ use Bigcommerce\Injector\Cache\ArrayServiceCache;
 use Bigcommerce\Injector\Reflection\ClassInspector;
 use Bigcommerce\Injector\Reflection\ClassInspectorStats;
 use Bigcommerce\Injector\Reflection\ParameterInspector;
-use Bigcommerce\Injector\Reflection\ReflectionClassMap;
+use Bigcommerce\Injector\Reflection\ReflectionClassCache;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -24,7 +24,7 @@ class ClassInspectorTest extends TestCase
 
     private ClassInspector $subject;
     private ArrayServiceCache|ObjectProphecy $serviceCache;
-    private ReflectionClassMap|ObjectProphecy $reflectionClassMap;
+    private ReflectionClassCache|ObjectProphecy $reflectionClassCache;
     private ParameterInspector|ObjectProphecy $parameterInspector;
     private ClassInspectorStats|ObjectProphecy $classInspectorStats;
 
@@ -32,11 +32,11 @@ class ClassInspectorTest extends TestCase
     {
         parent::setUp();
         $this->serviceCache = $this->prophesize(ArrayServiceCache::class);
-        $this->reflectionClassMap = $this->prophesize(ReflectionClassMap::class);
+        $this->reflectionClassCache = $this->prophesize(ReflectionClassCache::class);
         $this->parameterInspector = $this->prophesize(ParameterInspector::class);
         $this->classInspectorStats = $this->prophesize(ClassInspectorStats::class);
         $this->subject = new ClassInspector(
-            $this->reflectionClassMap->reveal(),
+            $this->reflectionClassCache->reveal(),
             $this->parameterInspector->reveal(),
             $this->serviceCache->reveal(),
             $this->classInspectorStats->reveal(),
@@ -49,8 +49,8 @@ class ClassInspectorTest extends TestCase
         $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled_exists", true);
         $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled_is_public", true);
         $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled_signature", []);
-        $this->reflectionClassMap->has(Argument::cetera())->willReturn(false);
-        $this->reflectionClassMap->put(Argument::cetera());
+        $this->reflectionClassCache->has(Argument::cetera())->willReturn(false);
+        $this->reflectionClassCache->put(Argument::cetera());
         $this->parameterInspector->getSignatureByReflectionClass(Argument::type(ReflectionClass::class), 'isEnabled')->willReturn([]);
 
         $this->subject->inspectMethod(DummyDependency::class, 'isEnabled');
@@ -61,7 +61,7 @@ class ClassInspectorTest extends TestCase
             ->shouldHaveBeenCalled();
         $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled_signature", [])
             ->shouldHaveBeenCalled();
-        $this->reflectionClassMap->put(Argument::type(ReflectionClass::class))
+        $this->reflectionClassCache->put(Argument::type(ReflectionClass::class))
             ->shouldHaveBeenCalled();
     }
 
@@ -79,8 +79,8 @@ class ClassInspectorTest extends TestCase
     {
         $this->serviceCache->has(Argument::cetera())->willReturn(false);
         $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled_exists", true);
-        $this->reflectionClassMap->has(Argument::cetera())->willReturn(false);
-        $this->reflectionClassMap->put(Argument::type(ReflectionClass::class));
+        $this->reflectionClassCache->has(Argument::cetera())->willReturn(false);
+        $this->reflectionClassCache->put(Argument::type(ReflectionClass::class));
 
         $hasMethod = $this->subject->classHasMethod(DummyDependency::class, 'isEnabled');
 
@@ -91,8 +91,8 @@ class ClassInspectorTest extends TestCase
     {
         $this->serviceCache->has(Argument::cetera())->willReturn(false);
         $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled2_exists", false);
-        $this->reflectionClassMap->has(Argument::cetera())->willReturn(false);
-        $this->reflectionClassMap->put(Argument::type(ReflectionClass::class));
+        $this->reflectionClassCache->has(Argument::cetera())->willReturn(false);
+        $this->reflectionClassCache->put(Argument::type(ReflectionClass::class));
 
         $hasMethod = $this->subject->classHasMethod(DummyDependency::class, 'isEnabled2');
 
@@ -103,8 +103,8 @@ class ClassInspectorTest extends TestCase
     {
         $this->serviceCache->has(Argument::cetera())->willReturn(false);
         $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled_exists", true);
-        $this->reflectionClassMap->has(Argument::cetera())->willReturn(false);
-        $this->reflectionClassMap->put(Argument::type(ReflectionClass::class));
+        $this->reflectionClassCache->has(Argument::cetera())->willReturn(false);
+        $this->reflectionClassCache->put(Argument::type(ReflectionClass::class));
 
         $this->subject->classHasMethod(DummyDependency::class, 'isEnabled');
 
@@ -126,8 +126,8 @@ class ClassInspectorTest extends TestCase
     {
         $this->serviceCache->has(Argument::cetera())->willReturn(false);
         $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled_is_public", true);
-        $this->reflectionClassMap->has(Argument::cetera())->willReturn(false);
-        $this->reflectionClassMap->put(Argument::type(ReflectionClass::class));
+        $this->reflectionClassCache->has(Argument::cetera())->willReturn(false);
+        $this->reflectionClassCache->put(Argument::type(ReflectionClass::class));
 
         $hasMethod = $this->subject->methodIsPublic(DummyDependency::class, 'isEnabled');
 
@@ -138,8 +138,8 @@ class ClassInspectorTest extends TestCase
     {
         $this->serviceCache->has(Argument::cetera())->willReturn(false);
         $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled2_is_public", false);
-        $this->reflectionClassMap->has(Argument::cetera())->willReturn(false);
-        $this->reflectionClassMap->put(Argument::type(ReflectionClass::class));
+        $this->reflectionClassCache->has(Argument::cetera())->willReturn(false);
+        $this->reflectionClassCache->put(Argument::type(ReflectionClass::class));
 
         $this->expectException(ReflectionException::class);
         $this->subject->methodIsPublic(DummyDependency::class, 'isEnabled2');
@@ -149,8 +149,8 @@ class ClassInspectorTest extends TestCase
     {
         $this->serviceCache->has(Argument::cetera())->willReturn(false);
         $this->serviceCache->set("Tests\Dummy\DummyPrivateConstructor::__construct_is_public", false);
-        $this->reflectionClassMap->has(Argument::cetera())->willReturn(false);
-        $this->reflectionClassMap->put(Argument::type(ReflectionClass::class));
+        $this->reflectionClassCache->has(Argument::cetera())->willReturn(false);
+        $this->reflectionClassCache->put(Argument::type(ReflectionClass::class));
 
         $isPublic = $this->subject->methodIsPublic(DummyPrivateConstructor::class, '__construct');
 
@@ -161,8 +161,8 @@ class ClassInspectorTest extends TestCase
     {
         $this->serviceCache->has(Argument::cetera())->willReturn(false);
         $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled_is_public", true);
-        $this->reflectionClassMap->has(Argument::cetera())->willReturn(false);
-        $this->reflectionClassMap->put(Argument::type(ReflectionClass::class));
+        $this->reflectionClassCache->has(Argument::cetera())->willReturn(false);
+        $this->reflectionClassCache->put(Argument::type(ReflectionClass::class));
 
         $this->subject->methodIsPublic(DummyDependency::class, 'isEnabled');
 
@@ -185,8 +185,8 @@ class ClassInspectorTest extends TestCase
     {
         $this->serviceCache->has(Argument::cetera())->willReturn(false);
         $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled_signature", []);
-        $this->reflectionClassMap->has(Argument::cetera())->willReturn(false);
-        $this->reflectionClassMap->put(Argument::type(ReflectionClass::class));
+        $this->reflectionClassCache->has(Argument::cetera())->willReturn(false);
+        $this->reflectionClassCache->put(Argument::type(ReflectionClass::class));
         $this->parameterInspector->getSignatureByReflectionClass(Argument::any(), 'isEnabled')->willReturn([]);
 
         $signature = $this->subject->getMethodSignature(DummyDependency::class, 'isEnabled');
@@ -197,8 +197,8 @@ class ClassInspectorTest extends TestCase
     public function testGetMethodSignatureThrowsExceptionForMissingMethodOnCacheMiss(): void
     {
         $this->serviceCache->has(Argument::cetera())->willReturn(false);
-        $this->reflectionClassMap->has(Argument::cetera())->willReturn(false);
-        $this->reflectionClassMap->put(Argument::type(ReflectionClass::class));
+        $this->reflectionClassCache->has(Argument::cetera())->willReturn(false);
+        $this->reflectionClassCache->put(Argument::type(ReflectionClass::class));
         $this->parameterInspector->getSignatureByReflectionClass(Argument::any(), 'isEnabled2')->willThrow(new ReflectionException());
 
         $this->expectException(ReflectionException::class);
@@ -209,8 +209,8 @@ class ClassInspectorTest extends TestCase
     {
         $this->serviceCache->has(Argument::cetera())->willReturn(false);
         $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled_signature", []);
-        $this->reflectionClassMap->has(Argument::cetera())->willReturn(false);
-        $this->reflectionClassMap->put(Argument::type(ReflectionClass::class));
+        $this->reflectionClassCache->has(Argument::cetera())->willReturn(false);
+        $this->reflectionClassCache->put(Argument::type(ReflectionClass::class));
         $this->parameterInspector->getSignatureByReflectionClass(Argument::any(), 'isEnabled')->willReturn([]);
 
         $this->subject->getMethodSignature(DummyDependency::class, 'isEnabled');

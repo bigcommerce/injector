@@ -8,7 +8,7 @@ use Bigcommerce\Injector\Cache\ArrayServiceCache;
 use Bigcommerce\Injector\Reflection\ClassInspector;
 use Bigcommerce\Injector\Reflection\ClassInspectorStats;
 use Bigcommerce\Injector\Reflection\ParameterInspector;
-use Bigcommerce\Injector\Reflection\ReflectionClassMap;
+use Bigcommerce\Injector\Reflection\ReflectionClassCache;
 use Psr\Container\ContainerInterface;
 
 class InjectorFactory
@@ -16,7 +16,7 @@ class InjectorFactory
     public static function create(ContainerInterface $container): InjectorInterface
     {
         $classInspector = new ClassInspector(
-            new ReflectionClassMap(50),
+            new ReflectionClassCache(50),
             new ParameterInspector(),
             new ArrayServiceCache(),
             new ClassInspectorStats()

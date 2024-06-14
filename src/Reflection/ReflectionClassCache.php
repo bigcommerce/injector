@@ -7,7 +7,7 @@ namespace Bigcommerce\Injector\Reflection;
 use Countable;
 use ReflectionClass;
 
-class ReflectionClassMap implements Countable
+class ReflectionClassCache implements Countable
 {
     private int $maxSize;
 
@@ -50,13 +50,13 @@ class ReflectionClassMap implements Countable
         return isset($this->map[$className]);
     }
 
-    private function evictOneObject(): void
-    {
-        array_shift($this->map);
-    }
-
     public function count(): int
     {
         return count($this->map);
+    }
+
+    private function evictOneObject(): void
+    {
+        array_shift($this->map);
     }
 }

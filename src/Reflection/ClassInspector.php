@@ -10,21 +10,12 @@ use ReflectionException;
 
 class ClassInspector
 {
-    private ReflectionClassMap $reflectionClassMap;
-    private ParameterInspector $parameterInspector;
-    private ServiceCacheInterface $serviceCache;
-    private ClassInspectorStats $stats;
-
     public function __construct(
-        ReflectionClassMap $reflectionClassMap,
-        ParameterInspector $parameterInspector,
-        ServiceCacheInterface $serviceCache,
-        ClassInspectorStats $stats
+        private readonly ReflectionClassCache $reflectionClassCache,
+        private readonly ParameterInspector $parameterInspector,
+        private readonly ServiceCacheInterface $serviceCache,
+        private readonly ClassInspectorStats $stats
     ) {
-        $this->reflectionClassMap = $reflectionClassMap;
-        $this->parameterInspector = $parameterInspector;
-        $this->serviceCache = $serviceCache;
-        $this->stats = $stats;
     }
 
     /**
@@ -122,12 +113,12 @@ class ClassInspector
      */
     private function getReflectionClass(string $class): ReflectionClass
     {
-        if ($this->reflectionClassMap->has($class)) {
-            $reflectionClass = $this->reflectionClassMap->get($class);
+        if ($this->reflectionClassCache->has($class)) {
+            $reflectionClass = $this->reflectionClassCache->get($class);
         } else {
             $reflectionClass = new ReflectionClass($class);
             $this->stats->incrementReflectionClassesCreated();
-            $this->reflectionClassMap->put($reflectionClass);
+            $this->reflectionClassCache->put($reflectionClass);
         }
 
         return $reflectionClass;
