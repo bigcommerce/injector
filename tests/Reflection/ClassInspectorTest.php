@@ -47,7 +47,7 @@ class ClassInspectorTest extends TestCase
     {
         $this->serviceCache->has(Argument::cetera())->willReturn(false);
         $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled_exists", true);
-        $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled_is_public", true);
+        $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled::is_public", true);
         $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled_signature", []);
         $this->reflectionClassCache->has(Argument::cetera())->willReturn(false);
         $this->reflectionClassCache->put(Argument::cetera());
@@ -57,7 +57,7 @@ class ClassInspectorTest extends TestCase
 
         $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled_exists", true)
             ->shouldHaveBeenCalled();
-        $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled_is_public", true)
+        $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled::is_public", true)
             ->shouldHaveBeenCalled();
         $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled_signature", [])
             ->shouldHaveBeenCalled();
@@ -125,7 +125,7 @@ class ClassInspectorTest extends TestCase
     public function testMethodIsPublicReturnsTrueForExistingMethodOnCacheMiss(): void
     {
         $this->serviceCache->has(Argument::cetera())->willReturn(false);
-        $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled_is_public", true);
+        $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled::is_public", true);
         $this->reflectionClassCache->has(Argument::cetera())->willReturn(false);
         $this->reflectionClassCache->put(Argument::type(ReflectionClass::class));
 
@@ -137,7 +137,7 @@ class ClassInspectorTest extends TestCase
     public function testMethodIsPublicThrowsExceptionForMissingMethodOnCacheMiss(): void
     {
         $this->serviceCache->has(Argument::cetera())->willReturn(false);
-        $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled2_is_public", false);
+        $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled2::is_public", false);
         $this->reflectionClassCache->has(Argument::cetera())->willReturn(false);
         $this->reflectionClassCache->put(Argument::type(ReflectionClass::class));
 
@@ -148,7 +148,7 @@ class ClassInspectorTest extends TestCase
     public function testMethodIsPublicReturnsFalseForPrivateMethodOnCacheMiss(): void
     {
         $this->serviceCache->has(Argument::cetera())->willReturn(false);
-        $this->serviceCache->set("Tests\Dummy\DummyPrivateConstructor::__construct_is_public", false);
+        $this->serviceCache->set("Tests\Dummy\DummyPrivateConstructor::__construct::is_public", false);
         $this->reflectionClassCache->has(Argument::cetera())->willReturn(false);
         $this->reflectionClassCache->put(Argument::type(ReflectionClass::class));
 
@@ -160,13 +160,13 @@ class ClassInspectorTest extends TestCase
     public function testMethodIsPublicAddsResultToCacheOnCacheMiss(): void
     {
         $this->serviceCache->has(Argument::cetera())->willReturn(false);
-        $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled_is_public", true);
+        $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled::is_public", true);
         $this->reflectionClassCache->has(Argument::cetera())->willReturn(false);
         $this->reflectionClassCache->put(Argument::type(ReflectionClass::class));
 
         $this->subject->methodIsPublic(DummyDependency::class, 'isEnabled');
 
-        $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled_is_public", true)
+        $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled::is_public", true)
             ->shouldHaveBeenCalled();
     }
 

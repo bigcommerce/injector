@@ -43,7 +43,7 @@ class ClassInspector
      */
     public function classHasMethod(string $class, string $method): bool
     {
-        $key = "$class::{$method}_exists";
+        $key = "$class::{$method}::exists";
         if ($this->serviceCache->has($key)) {
             return $this->serviceCache->get($key);
         }
@@ -64,7 +64,7 @@ class ClassInspector
      */
     public function methodIsPublic(string $class, string $method): bool
     {
-        $key = "$class::{$method}_is_public";
+        $key = "$class::{$method}::is_public";
         if ($this->serviceCache->has($key)) {
             return $this->serviceCache->get($key);
         }
@@ -85,7 +85,7 @@ class ClassInspector
      */
     public function getMethodSignature(string $class, string $method): array
     {
-        $key = "$class::{$method}_signature";
+        $key = "$class::{$method}::signature";
         if ($this->serviceCache->has($key)) {
             return $this->serviceCache->get($key);
         }
