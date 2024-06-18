@@ -13,13 +13,13 @@ use Psr\Container\ContainerInterface;
 
 class InjectorFactory
 {
-    public static function create(ContainerInterface $container): InjectorInterface
+    public static function create(ContainerInterface $container, int $reflectionClassCacheSize = 50): InjectorInterface
     {
         $classInspector = new ClassInspector(
-            new ReflectionClassCache(50),
+            new ReflectionClassCache($reflectionClassCacheSize),
             new ParameterInspector(),
             new ArrayServiceCache(),
-            new ClassInspectorStats()
+            new ClassInspectorStats(),
         );
 
         return new Injector($container, $classInspector);
