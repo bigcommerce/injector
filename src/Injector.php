@@ -3,7 +3,7 @@ namespace Bigcommerce\Injector;
 
 use Bigcommerce\Injector\Exception\InjectorInvocationException;
 use Bigcommerce\Injector\Exception\MissingRequiredParameterException;
-use Bigcommerce\Injector\Reflection\ClassInspector;
+use Bigcommerce\Injector\Reflection\ClassInspectorInterface;
 use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
 use ReflectionException;
@@ -38,9 +38,9 @@ class Injector implements InjectorInterface
      */
     protected $autoCreateWhiteList = [];
 
-    private ClassInspector $classInspector;
+    private ClassInspectorInterface $classInspector;
 
-    public function __construct(ContainerInterface $container, ClassInspector $classInspector)
+    public function __construct(ContainerInterface $container, ClassInspectorInterface $classInspector)
     {
         $this->container = $container;
         $this->classInspector = $classInspector;

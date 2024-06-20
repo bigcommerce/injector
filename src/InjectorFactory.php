@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bigcommerce\Injector;
 
 use Bigcommerce\Injector\Cache\ArrayServiceCache;
+use Bigcommerce\Injector\Reflection\CachingClassInspector;
 use Bigcommerce\Injector\Reflection\ClassInspector;
 use Bigcommerce\Injector\Reflection\ClassInspectorStats;
 use Bigcommerce\Injector\Reflection\ParameterInspector;
@@ -18,10 +19,14 @@ class InjectorFactory
         $classInspector = new ClassInspector(
             new ReflectionClassCache($reflectionClassCacheSize),
             new ParameterInspector(),
-            new ArrayServiceCache(),
             new ClassInspectorStats(),
         );
 
-        return new Injector($container, $classInspector);
+        $cachingClassInspector = new CachingClassInspector(
+            $classInspector,
+            new ArrayServiceCache(),
+        );
+
+        return new Injector($container, $cachingClassInspector);
     }
 }
