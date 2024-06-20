@@ -44,14 +44,14 @@ class CachingClassInspector implements ClassInspectorInterface
     public function classHasMethod(string $class, string $method): bool
     {
         $key = "$class::{$method}::exists";
-        if ($this->serviceCache->has($key)) {
-            return $this->serviceCache->get($key);
+        if (!$this->serviceCache->has($key)) {
+            $this->serviceCache->set(
+                $key,
+                $this->classInspector->classHasMethod($class, $method),
+            );
         }
 
-        $methodExists = $this->classInspector->classHasMethod($class, $method);;
-        $this->serviceCache->set($key, $methodExists);
-
-        return $methodExists;
+        return $this->serviceCache->get($key);
     }
 
     /**
@@ -65,14 +65,14 @@ class CachingClassInspector implements ClassInspectorInterface
     public function methodIsPublic(string $class, string $method): bool
     {
         $key = "$class::{$method}::is_public";
-        if ($this->serviceCache->has($key)) {
-            return $this->serviceCache->get($key);
+        if (!$this->serviceCache->has($key)) {
+            $this->serviceCache->set(
+                $key,
+                $this->classInspector->methodIsPublic($class, $method),
+            );
         }
 
-        $methodIsPublic =  $this->classInspector->methodIsPublic($class, $method);;
-        $this->serviceCache->set($key, $methodIsPublic);
-
-        return $methodIsPublic;
+        return $this->serviceCache->get($key);
     }
 
     /**
@@ -86,14 +86,14 @@ class CachingClassInspector implements ClassInspectorInterface
     public function getMethodSignature(string $class, string $method): array
     {
         $key = "$class::{$method}::signature";
-        if ($this->serviceCache->has($key)) {
-            return $this->serviceCache->get($key);
+        if (!$this->serviceCache->has($key)) {
+            $this->serviceCache->set(
+                $key,
+                $this->classInspector->getMethodSignature($class, $method),
+            );
         }
 
-        $methodSignature = $this->classInspector->getMethodSignature($class, $method);;
-        $this->serviceCache->set($key, $methodSignature);
-
-        return $methodSignature;
+        return $this->serviceCache->get($key);
     }
 
     public function getStats(): ClassInspectorStats

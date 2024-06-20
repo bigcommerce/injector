@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Reflection;
 
 use Bigcommerce\Injector\Cache\ArrayServiceCache;
+use Bigcommerce\Injector\Cache\ServiceCacheInterface;
 use Bigcommerce\Injector\Reflection\CachingClassInspector;
 use Bigcommerce\Injector\Reflection\ClassInspector;
 use PHPUnit\Framework\TestCase;
@@ -25,7 +26,11 @@ class CachingClassInspectorTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->serviceCache = $this->prophesize(ArrayServiceCache::class);
+        $serviceCache = $this->prophesize(ServiceCacheInterface::class);
+        $serviceCache->set(Argument::cetera())->will(function ($arguments) use ($serviceCache) {
+            $serviceCache->get($arguments[0])->willReturn($arguments[1]);
+        });
+        $this->serviceCache = $serviceCache;
         $this->classInspector = $this->prophesize(ClassInspector::class);
         $this->subject = new CachingClassInspector(
             $this->classInspector->reveal(),
@@ -64,7 +69,6 @@ class CachingClassInspectorTest extends TestCase
     {
         $this->serviceCache->has(Argument::cetera())->willReturn(false);
         $this->classInspector->classHasMethod(DummyDependency::class, 'isEnabled')->willReturn(true);
-        $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled::exists", true);
 
         $hasMethod = $this->subject->classHasMethod(DummyDependency::class, 'isEnabled');
 
@@ -75,7 +79,6 @@ class CachingClassInspectorTest extends TestCase
     {
         $this->serviceCache->has(Argument::cetera())->willReturn(false);
         $this->classInspector->classHasMethod(DummyDependency::class, 'isEnabled2')->willReturn(false);
-        $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled2::exists", false);
 
         $hasMethod = $this->subject->classHasMethod(DummyDependency::class, 'isEnabled2');
 
@@ -85,7 +88,6 @@ class CachingClassInspectorTest extends TestCase
     public function testClassHasMethodAddsResultToCacheOnCacheMiss(): void
     {
         $this->serviceCache->has(Argument::cetera())->willReturn(false);
-        $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled::exists", true);
         $this->classInspector->classHasMethod(DummyDependency::class, 'isEnabled')->willReturn(true);
 
         $this->subject->classHasMethod(DummyDependency::class, 'isEnabled');
@@ -108,7 +110,6 @@ class CachingClassInspectorTest extends TestCase
     {
         $this->serviceCache->has(Argument::cetera())->willReturn(false);
         $this->classInspector->methodIsPublic(DummyDependency::class, 'isEnabled')->willReturn(true);
-        $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled::is_public", true);
 
         $hasMethod = $this->subject->methodIsPublic(DummyDependency::class, 'isEnabled');
 
@@ -128,7 +129,6 @@ class CachingClassInspectorTest extends TestCase
     public function testMethodIsPublicAddsResultToCacheOnCacheMiss(): void
     {
         $this->serviceCache->has(Argument::cetera())->willReturn(false);
-        $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled::is_public", true);
         $this->classInspector->methodIsPublic(DummyDependency::class, 'isEnabled')->willReturn(true);
 
         $this->subject->methodIsPublic(DummyDependency::class, 'isEnabled');
@@ -151,7 +151,6 @@ class CachingClassInspectorTest extends TestCase
     public function testGetMethodSignatureReturnsSignatureForExistingMethodOnCacheMiss(): void
     {
         $this->serviceCache->has(Argument::cetera())->willReturn(false);
-        $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled::signature", []);
         $this->classInspector->getMethodSignature(Argument::any(), 'isEnabled')->willReturn([]);
 
         $signature = $this->subject->getMethodSignature(DummyDependency::class, 'isEnabled');
@@ -171,7 +170,6 @@ class CachingClassInspectorTest extends TestCase
     public function testGetMethodSignatureAddsResultToCacheOnCacheMiss(): void
     {
         $this->serviceCache->has(Argument::cetera())->willReturn(false);
-        $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled::signature", []);
         $this->classInspector->getMethodSignature(Argument::any(), 'isEnabled')->willReturn([]);
 
         $this->subject->getMethodSignature(DummyDependency::class, 'isEnabled');

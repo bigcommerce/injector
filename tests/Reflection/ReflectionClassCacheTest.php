@@ -16,11 +16,6 @@ class ReflectionClassCacheTest extends TestCase
 {
     use ProphecyTrait;
 
-    public function setUp(): void
-    {
-        parent::setUp();
-    }
-
     public function testHasReturnsTrueWhenEntryExistsForGivenReflectionClass(): void
     {
         $subject = new ReflectionClassCache(10);

@@ -28,8 +28,6 @@ use ReflectionException;
  */
 class Injector implements InjectorInterface
 {
-    private ContainerInterface $container;
-
     /**
      * Regular Expressions matching dependencies that can be automatically created using their class name, even if they
      * are not defined in the IoC Container.
@@ -38,12 +36,8 @@ class Injector implements InjectorInterface
      */
     protected $autoCreateWhiteList = [];
 
-    private ClassInspectorInterface $classInspector;
-
-    public function __construct(ContainerInterface $container, ClassInspectorInterface $classInspector)
+    public function __construct(private ContainerInterface $container, private ClassInspectorInterface $classInspector)
     {
-        $this->container = $container;
-        $this->classInspector = $classInspector;
     }
 
     /**
