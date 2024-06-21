@@ -17,7 +17,7 @@ interface ServiceCacheInterface
      * @param string $key
      * @return mixed|false cached value or false when key not present in a cache
      */
-    public function get($key);
+    public function get(string $key): mixed;
 
     /**
      * Save a key/value pair to the cache.
@@ -26,7 +26,15 @@ interface ServiceCacheInterface
      * @param mixed $value
      * @return void
      */
-    public function set($key, $value);
+    public function set(string $key, mixed $value);
+
+    /**
+     * Check if a key exists in the cache.
+     *
+     * @param string $key
+     * @return bool
+     */
+    public function has(string $key): bool;
 
     /**
      * Remove a key from the cache.
@@ -34,5 +42,5 @@ interface ServiceCacheInterface
      * @param string $key
      * @return void
      */
-    public function remove($key);
+    public function remove(string $key): void;
 }

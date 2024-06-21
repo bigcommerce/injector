@@ -38,6 +38,7 @@ class ArrayServiceCacheTest extends TestCase
         $cache->remove("test");
         $this->assertFalse($cache->get("test"));
     }
+
     public function testRemove()
     {
         $cache = new ArrayServiceCache();
@@ -45,5 +46,47 @@ class ArrayServiceCacheTest extends TestCase
         $this->assertEquals("Abc", $cache->get("test"));
         $cache->remove("test");
         $this->assertFalse($cache->get("test"));
+    }
+
+    public function testHasReturnsTrueForExistingKey(): void
+    {
+        $cache = new ArrayServiceCache();
+        $cache->set("test", "Abc");
+
+        $hasEntry = $cache->has("test");
+
+        $this->assertTrue($hasEntry);
+    }
+
+    public function testHasReturnsFalseForMissingKey(): void
+    {
+        $cache = new ArrayServiceCache();
+        $cache->set("test2", "Abc");
+
+        $hasEntry = $cache->has("test");
+
+        $this->assertFalse($hasEntry);
+    }
+
+    public function testCountChecksTheNumberOfEntries(): void
+    {
+        $cache = new ArrayServiceCache();
+        $cache->set("test1", "Abc");
+        $cache->set("test2", "Def");
+
+        $count = $cache->count();
+
+        $this->assertEquals(2, $count);
+    }
+
+    public function testGetAllRetrievesAllCacheEntries(): void
+    {
+        $cache = new ArrayServiceCache();
+        $cache->set("test1", 123);
+        $cache->set("test2", 456);
+
+        $allEntries = $cache->getAll();
+
+        $this->assertEquals(['test1' => 123, 'test2' => 456], $allEntries);
     }
 }

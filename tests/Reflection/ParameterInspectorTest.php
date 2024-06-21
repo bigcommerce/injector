@@ -1,12 +1,10 @@
 <?php
 namespace Tests\Reflection;
 
-use Bigcommerce\Injector\Cache\ArrayServiceCache;
-use Bigcommerce\Injector\Cache\ServiceCacheInterface;
 use Bigcommerce\Injector\Reflection\ParameterInspector;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
-use Prophecy\Prophecy\ObjectProphecy;
+use Tests\Dummy\DummyNoConstructor;
 use Tests\Dummy\MagicCallDummy;
 
 /**
@@ -17,13 +15,9 @@ class ParameterInspectorTest extends TestCase
 {
     use ProphecyTrait;
 
-    /** @var ObjectProphecy|ServiceCacheInterface */
-    private $cache;
-
     public function setUp(): void
     {
         parent::setUp();
-        $this->cache = $this->prophesize(ArrayServiceCache::class);
     }
 
     /**
@@ -31,27 +25,27 @@ class ParameterInspectorTest extends TestCase
      */
     public function test()
     {
-        $ref = new ParameterInspector($this->cache->reveal());
+        $ref = new ParameterInspector();
         $signature = $ref->getSignatureByReflectionClass(new \ReflectionClass($this), "example1");
         $this->assertEquals(
-            ["name" => "cache", "type" => ArrayServiceCache::class],
+            ["name" => "dummyNoConstructor", "type" => DummyNoConstructor::class],
             $signature[0]
         );
     }
 
     public function testGetSignatureTypes()
     {
-        $ref = new ParameterInspector($this->cache->reveal());
+        $ref = new ParameterInspector();
         $signature = $ref->getSignatureByClassName(self::class, "example1");
         $this->assertEquals(
-            ["name" => "cache", "type" => ArrayServiceCache::class],
+            ["name" => "dummyNoConstructor", "type" => DummyNoConstructor::class],
             $signature[0]
         );
     }
 
     public function testGetSignatureDefaults()
     {
-        $ref = new ParameterInspector($this->cache->reveal());
+        $ref = new ParameterInspector();
         $signature = $ref->getSignatureByClassName(self::class, "example1");
         $this->assertCount(2, $signature);
         $this->assertEquals(
@@ -62,7 +56,7 @@ class ParameterInspectorTest extends TestCase
 
     public function testGetSignatureNoDefaults()
     {
-        $ref = new ParameterInspector($this->cache->reveal());
+        $ref = new ParameterInspector();
         $signature = $ref->getSignatureByClassName(self::class, "example2");
         $this->assertCount(2, $signature);
         $this->assertEquals(
@@ -77,27 +71,27 @@ class ParameterInspectorTest extends TestCase
     public function testGetSignatureInvalidMethod()
     {
         $this->expectException(\ReflectionException::class);
-        $ref = new ParameterInspector($this->cache->reveal());
+        $ref = new ParameterInspector();
         $ref->getSignatureByClassName(self::class, "invalidMethod");
     }
 
     public function testGetSignatureMagicCallMethod()
     {
-        $ref = new ParameterInspector($this->cache->reveal());
+        $ref = new ParameterInspector();
         $signature = $ref->getSignatureByClassName(MagicCallDummy::class, "strangeMethodName");
         $this->assertEquals([], $signature);
     }
 
     public function testGetSignatureNoParameters()
     {
-        $ref = new ParameterInspector($this->cache->reveal());
+        $ref = new ParameterInspector();
         $signature = $ref->getSignatureByClassName(self::class, "example3");
         $this->assertEquals([], $signature);
     }
 
     public function testGetSignatureVariadicParameter()
     {
-        $ref = new ParameterInspector($this->cache->reveal());
+        $ref = new ParameterInspector();
         $signature = $ref->getSignatureByClassName(self::class, "example4");
         $this->assertEquals(
             ["name" => "args", "variadic" => true],
@@ -105,24 +99,12 @@ class ParameterInspectorTest extends TestCase
         );
     }
 
-    public function testCacheHit()
-    {
-        $cacheSignature = [
-            ["name" => "secretParameter", "type" => null, "default" => 1]
-        ];
-        $this->cache->get(self::class . "::secretMethod")->willReturn($cacheSignature);
-        $ref = new ParameterInspector($this->cache->reveal());
-
-        $signature = $ref->getSignatureByClassName(self::class, "secretMethod");
-        $this->assertEquals($cacheSignature, $signature);
-    }
-
     /**
      * THIS METHOD IS INSPECTED AS PART OF THIS TEST. DO NOT REMOVE
-     * @param ArrayServiceCache $cache
+     * @param DummyNoConstructor $dummyNoConstructor
      * @param int $default
      */
-    private function example1(ArrayServiceCache $cache, $default = 1)
+    private function example1(DummyNoConstructor $dummyNoConstructor, $default = 1)
     {
     }
 

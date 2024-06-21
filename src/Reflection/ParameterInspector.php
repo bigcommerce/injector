@@ -1,8 +1,6 @@
 <?php
 namespace Bigcommerce\Injector\Reflection;
 
-use Bigcommerce\Injector\Cache\ServiceCacheInterface;
-
 /**
  * The ParameterInspector exposes cached reflection of a methods signature enabling auto-wiring of dependencies within
  * the Injector. This class does expose the \ReflectionParameter or utilise Parameter value objects but
@@ -15,24 +13,10 @@ use Bigcommerce\Injector\Cache\ServiceCacheInterface;
 class ParameterInspector
 {
     /**
-     * @var ServiceCacheInterface
-     */
-    private $cache;
-
-    /**
-     * ParameterInspector constructor.
-     * @param ServiceCacheInterface $cache
-     */
-    public function __construct(ServiceCacheInterface $cache)
-    {
-        $this->cache = $cache;
-    }
-
-    /**
      * Fetch the method signature of a method when we have already created a \ReflectionClass
      * @param \ReflectionClass $reflectionClass
      * @param string $methodName
-     * @return array
+     * @return array{'name': string, 'type'?: string, 'default'?: mixed, 'variadic'?: bool}[]
      * @throws \ReflectionException
      */
     public function getSignatureByReflectionClass(\ReflectionClass $reflectionClass, $methodName)
@@ -45,7 +29,7 @@ class ParameterInspector
      * Fetch the method signature of a method using its fully qualified class name, and method name.
      * @param string $className
      * @param string $methodName
-     * @return array
+     * @return array{'name': string, 'type'?: string, 'default'?: mixed, 'variadic'?: bool}[]
      * @throws \ReflectionException
      */
     public function getSignatureByClassName($className, $methodName)
@@ -61,22 +45,17 @@ class ParameterInspector
      * @param string $className Fully qualified class name
      * @param string $methodName Name of the method we're inspecting
      * @param \ReflectionClass $refClass Optional existing ReflectionClass for this class
-     * @return array The signature of this methods parameters as an array.
+     * @return array{'name': string, 'type'?: string, 'default'?: mixed, 'variadic'?: bool}[] The signature
+     * of this methods parameters as an array.
      * @throws \ReflectionException
      */
     private function getMethodSignature($className, $methodName, \ReflectionClass $refClass = null)
     {
-        $cacheKey = $className . "::" . $methodName;
-        $methodSignature = $this->cache->get($cacheKey);
-        if ($methodSignature) {
-            return $methodSignature;
-        }
         if (!$refClass) {
             $refClass = new \ReflectionClass($className);
         }
 
         $methodSignature = [];
-        $method = null;
         try {
             $method = $refClass->getMethod($methodName);
             foreach ($method->getParameters() as $parameter) {
@@ -102,7 +81,6 @@ class ParameterInspector
                 throw $e;
             }
         }
-        $this->cache->set($cacheKey, $methodSignature);
         return $methodSignature;
     }
 }
