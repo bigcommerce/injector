@@ -49,7 +49,7 @@ class ParameterInspector
      * of this methods parameters as an array.
      * @throws \ReflectionException
      */
-    private function getMethodSignature($className, $methodName, \ReflectionClass $refClass = null)
+    private function getMethodSignature($className, $methodName, ?\ReflectionClass $refClass = null)
     {
         if (!$refClass) {
             $refClass = new \ReflectionClass($className);
