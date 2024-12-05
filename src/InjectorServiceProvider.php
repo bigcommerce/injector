@@ -154,7 +154,7 @@ abstract class InjectorServiceProvider implements ServiceProviderInterface
      * the IoC container as its first parameter.
      * @return void
      */
-    protected function lazyBind($className, callable $parameterFactory = null)
+    protected function lazyBind($className, ?callable $parameterFactory = null)
     {
         $this->bind(
             $className,
@@ -175,7 +175,7 @@ abstract class InjectorServiceProvider implements ServiceProviderInterface
      * the IoC container as its first parameter.
      * @return void
      */
-    protected function lazyBindFactory($className, callable $parameterFactory = null)
+    protected function lazyBindFactory($className, ?callable $parameterFactory = null)
     {
         $this->bindFactory(
             $className,
@@ -193,7 +193,7 @@ abstract class InjectorServiceProvider implements ServiceProviderInterface
      * @return void
      * @throws \Exception
      */
-    protected function autoBind($className, callable $parameterFactory = null)
+    protected function autoBind($className, ?callable $parameterFactory = null)
     {
         $this->bind(
             $className,
@@ -211,7 +211,7 @@ abstract class InjectorServiceProvider implements ServiceProviderInterface
      * @return void
      * @throws \Exception
      */
-    protected function autoBindFactory($className, callable $parameterFactory = null)
+    protected function autoBindFactory($className, ?callable $parameterFactory = null)
     {
         $this->bindFactory(
             $className,

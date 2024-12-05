@@ -18,7 +18,7 @@ class InjectorFactory
     public static function create(
         ContainerInterface $container,
         int $reflectionClassCacheSize = 50,
-        ServiceCacheInterface $serviceCache = null,
+        ?ServiceCacheInterface $serviceCache = null,
     ): InjectorInterface {
         $classInspector = new ClassInspector(
             new ReflectionClassCache($reflectionClassCacheSize),

@@ -27,7 +27,7 @@ class MissingRequiredParameterException extends ServiceException
      * @param \Exception $previous
      * @internal param int $code
      */
-    public function __construct($parameterName, $parameterType, $message, \Exception $previous = null)
+    public function __construct($parameterName, $parameterType, $message, ?\Exception $previous = null)
     {
         parent::__construct($message, 0, $previous);
         $this->parameterName = $parameterName;

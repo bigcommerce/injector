@@ -41,7 +41,7 @@ class BindingClosureFactory
      * the IoC container as its first parameter.
      * @return \Closure
      */
-    public function createAutoWireClosure($className, callable $parameterFactory = null)
+    public function createAutoWireClosure($className, ?callable $parameterFactory = null)
     {
         return function (Container $app) use ($className, $parameterFactory) {
             $parameters = $parameterFactory ? $parameterFactory($app) : [];
@@ -62,7 +62,7 @@ class BindingClosureFactory
      * the IoC container as its first parameter.
      * @return callable
      */
-    public function createAutoWireProxyClosure($className, callable $parameterFactory = null)
+    public function createAutoWireProxyClosure($className, ?callable $parameterFactory = null)
     {
         return function (Container $app) use ($className, $parameterFactory) {
             $serviceFactory = $this->createAutoWireClosure($className, $parameterFactory);
