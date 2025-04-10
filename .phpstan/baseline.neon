@@ -1,116 +1,169 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Method Bigcommerce\\\\Injector\\\\Adapter\\\\ArrayContainerAdapter\\:\\:__construct\\(\\) has parameter \\$arrayContainer with generic interface ArrayAccess but does not specify its types\\: TKey, TValue$#"
+			message: '#^Method Bigcommerce\\Injector\\Adapter\\ArrayContainerAdapter\:\:__construct\(\) has parameter \$arrayContainer with generic interface ArrayAccess but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
 			count: 1
 			path: ../src/Adapter/ArrayContainerAdapter.php
 
 		-
-			message: "#^Method Bigcommerce\\\\Injector\\\\Adapter\\\\ArrayContainerAdapter\\:\\:__construct\\(\\) has parameter \\$arrayContainer with no value type specified in iterable type array\\.$#"
+			message: '#^Method Bigcommerce\\Injector\\Adapter\\ArrayContainerAdapter\:\:__construct\(\) has parameter \$arrayContainer with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
 			count: 1
 			path: ../src/Adapter/ArrayContainerAdapter.php
 
 		-
-			message: "#^Property Bigcommerce\\\\Injector\\\\Adapter\\\\ArrayContainerAdapter\\:\\:\\$arrayContainer type has no value type specified in iterable type array\\.$#"
+			message: '#^Property Bigcommerce\\Injector\\Adapter\\ArrayContainerAdapter\:\:\$arrayContainer type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
 			count: 1
 			path: ../src/Adapter/ArrayContainerAdapter.php
 
 		-
-			message: "#^Property Bigcommerce\\\\Injector\\\\Adapter\\\\ArrayContainerAdapter\\:\\:\\$arrayContainer with generic interface ArrayAccess does not specify its types\\: TKey, TValue$#"
+			message: '#^Property Bigcommerce\\Injector\\Adapter\\ArrayContainerAdapter\:\:\$arrayContainer with generic interface ArrayAccess does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
 			count: 1
 			path: ../src/Adapter/ArrayContainerAdapter.php
 
 		-
-			message: "#^Method Bigcommerce\\\\Injector\\\\Injector\\:\\:buildParameterArray\\(\\) has parameter \\$methodSignature with no value type specified in iterable type array\\.$#"
+			message: '#^Call to function is_object\(\) with object will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
 			count: 1
 			path: ../src/Injector.php
 
 		-
-			message: "#^Method Bigcommerce\\\\Injector\\\\Injector\\:\\:buildParameterArray\\(\\) has parameter \\$providedParameters with no value type specified in iterable type array\\.$#"
+			message: '#^Method Bigcommerce\\Injector\\Injector\:\:buildParameterArray\(\) has Bigcommerce\\Injector\\Exception\\InjectorInvocationException in PHPDoc @throws tag but it''s not thrown\.$#'
+			identifier: throws.unusedType
 			count: 1
 			path: ../src/Injector.php
 
 		-
-			message: "#^Method Bigcommerce\\\\Injector\\\\Injector\\:\\:buildParameterArray\\(\\) return type has no value type specified in iterable type array\\.$#"
+			message: '#^Method Bigcommerce\\Injector\\Injector\:\:buildParameterArray\(\) has InvalidArgumentException in PHPDoc @throws tag but it''s not thrown\.$#'
+			identifier: throws.unusedType
 			count: 1
 			path: ../src/Injector.php
 
 		-
-			message: "#^Method Bigcommerce\\\\Injector\\\\Injector\\:\\:create\\(\\) has parameter \\$parameters with no value type specified in iterable type array\\.$#"
+			message: '#^Method Bigcommerce\\Injector\\Injector\:\:buildParameterArray\(\) has ReflectionException in PHPDoc @throws tag but it''s not thrown\.$#'
+			identifier: throws.unusedType
 			count: 1
 			path: ../src/Injector.php
 
 		-
-			message: "#^Method Bigcommerce\\\\Injector\\\\Injector\\:\\:getAutoCreateWhiteList\\(\\) has invalid return type string\\.$#"
+			message: '#^Method Bigcommerce\\Injector\\Injector\:\:buildParameterArray\(\) has parameter \$methodSignature with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
 			count: 1
 			path: ../src/Injector.php
 
 		-
-			message: "#^Method Bigcommerce\\\\Injector\\\\Injector\\:\\:getAutoCreateWhiteList\\(\\) should return array\\<string\\> but returns array\\<string\\>\\.$#"
+			message: '#^Method Bigcommerce\\Injector\\Injector\:\:buildParameterArray\(\) has parameter \$providedParameters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
 			count: 1
 			path: ../src/Injector.php
 
 		-
-			message: "#^Method Bigcommerce\\\\Injector\\\\Injector\\:\\:invoke\\(\\) has parameter \\$parameters with no value type specified in iterable type array\\.$#"
+			message: '#^Method Bigcommerce\\Injector\\Injector\:\:buildParameterArray\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
 			count: 1
 			path: ../src/Injector.php
 
 		-
-			message: "#^Method Bigcommerce\\\\Injector\\\\Injector\\:\\:resolveParameter\\(\\) has parameter \\$parameterData with no value type specified in iterable type array\\.$#"
+			message: '#^Method Bigcommerce\\Injector\\Injector\:\:create\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
 			count: 1
 			path: ../src/Injector.php
 
 		-
-			message: "#^Method Bigcommerce\\\\Injector\\\\Injector\\:\\:resolveParameter\\(\\) has parameter \\$providedParameters with no value type specified in iterable type array\\.$#"
+			message: '#^Method Bigcommerce\\Injector\\Injector\:\:getAutoCreateWhiteList\(\) has invalid return type string\.$#'
+			identifier: class.notFound
 			count: 1
 			path: ../src/Injector.php
 
 		-
-			message: "#^Method Bigcommerce\\\\Injector\\\\InjectorInterface\\:\\:create\\(\\) has parameter \\$parameters with no value type specified in iterable type array\\.$#"
+			message: '#^Method Bigcommerce\\Injector\\Injector\:\:getAutoCreateWhiteList\(\) should return array\<string\> but returns array\<string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: ../src/Injector.php
+
+		-
+			message: '#^Method Bigcommerce\\Injector\\Injector\:\:invoke\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: ../src/Injector.php
+
+		-
+			message: '#^Method Bigcommerce\\Injector\\Injector\:\:resolveParameter\(\) has parameter \$parameterData with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: ../src/Injector.php
+
+		-
+			message: '#^Method Bigcommerce\\Injector\\Injector\:\:resolveParameter\(\) has parameter \$providedParameters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: ../src/Injector.php
+
+		-
+			message: '#^Method Bigcommerce\\Injector\\InjectorInterface\:\:create\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
 			count: 1
 			path: ../src/InjectorInterface.php
 
 		-
-			message: "#^Method Bigcommerce\\\\Injector\\\\InjectorInterface\\:\\:invoke\\(\\) has parameter \\$parameters with no value type specified in iterable type array\\.$#"
+			message: '#^Method Bigcommerce\\Injector\\InjectorInterface\:\:invoke\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
 			count: 1
 			path: ../src/InjectorInterface.php
 
 		-
-			message: "#^Method Bigcommerce\\\\Injector\\\\InjectorServiceProvider\\:\\:create\\(\\) has parameter \\$parameters with no value type specified in iterable type array\\.$#"
+			message: '#^Method Bigcommerce\\Injector\\InjectorServiceProvider\:\:create\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
 			count: 1
 			path: ../src/InjectorServiceProvider.php
 
 		-
-			message: "#^Call to an undefined method ReflectionType\\:\\:getName\\(\\)\\.$#"
+			message: '#^Method Bigcommerce\\Injector\\InjectorServiceProvider\:\:get\(\) has InvalidArgumentException in PHPDoc @throws tag but it''s not thrown\.$#'
+			identifier: throws.unusedType
+			count: 1
+			path: ../src/InjectorServiceProvider.php
+
+		-
+			message: '#^Call to an undefined method ReflectionType\:\:getName\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: ../src/Reflection/ParameterInspector.php
 
 		-
-			message: "#^Call to an undefined method ReflectionType\\:\\:isBuiltin\\(\\)\\.$#"
+			message: '#^Call to an undefined method ReflectionType\:\:isBuiltin\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: ../src/Reflection/ParameterInspector.php
 
 		-
-			message: "#^Method Bigcommerce\\\\Injector\\\\Reflection\\\\ParameterInspector\\:\\:getMethodSignature\\(\\) has parameter \\$refClass with generic class ReflectionClass but does not specify its types\\: T$#"
+			message: '#^Method Bigcommerce\\Injector\\Reflection\\ParameterInspector\:\:getMethodSignature\(\) has parameter \$refClass with generic class ReflectionClass but does not specify its types\: T$#'
+			identifier: missingType.generics
 			count: 1
 			path: ../src/Reflection/ParameterInspector.php
 
 		-
-			message: "#^Method Bigcommerce\\\\Injector\\\\Reflection\\\\ParameterInspector\\:\\:getSignatureByReflectionClass\\(\\) has parameter \\$reflectionClass with generic class ReflectionClass but does not specify its types\\: T$#"
+			message: '#^Method Bigcommerce\\Injector\\Reflection\\ParameterInspector\:\:getSignatureByReflectionClass\(\) has parameter \$reflectionClass with generic class ReflectionClass but does not specify its types\: T$#'
+			identifier: missingType.generics
 			count: 1
 			path: ../src/Reflection/ParameterInspector.php
 
 		-
-			message: "#^Anonymous function has an unused use \\$className\\.$#"
+			message: '#^Anonymous function has an unused use \$className\.$#'
+			identifier: closure.unusedUse
 			count: 1
 			path: ../src/ServiceProvider/BindingClosureFactory.php
 
 		-
-			message: "#^Parameter \\#2 \\$initializer of method ProxyManager\\\\Factory\\\\LazyLoadingValueHolderFactory\\:\\:createProxy\\(\\) expects Closure\\(object\\|null\\=, ProxyManager\\\\Proxy\\\\VirtualProxyInterface\\=, string\\=, array\\<string, mixed\\>\\=, Closure\\|null\\=\\)\\: bool, Closure\\(mixed, mixed, mixed, mixed, mixed\\)\\: true given\\.$#"
+			message: '#^Parameter \#2 \$initializer of method ProxyManager\\Factory\\LazyLoadingValueHolderFactory\:\:createProxy\(\) expects Closure\(object\|null\=, ProxyManager\\Proxy\\VirtualProxyInterface\=, string\=, array\<string, mixed\>\=, Closure\|null\=\)\: bool, Closure\(mixed, mixed, mixed, mixed, mixed\)\: true given\.$#'
+			identifier: argument.type
 			count: 1
 			path: ../src/ServiceProvider/BindingClosureFactory.php
 
 		-
-			message: "#^Unable to resolve the template type RealObjectType in call to method ProxyManager\\\\Factory\\\\LazyLoadingValueHolderFactory\\:\\:createProxy\\(\\)$#"
+			message: '#^Unable to resolve the template type RealObjectType in call to method ProxyManager\\Factory\\LazyLoadingValueHolderFactory\:\:createProxy\(\)$#'
+			identifier: argument.templateType
 			count: 1
 			path: ../src/ServiceProvider/BindingClosureFactory.php

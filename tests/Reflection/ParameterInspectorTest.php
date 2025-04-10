@@ -2,15 +2,13 @@
 namespace Tests\Reflection;
 
 use Bigcommerce\Injector\Reflection\ParameterInspector;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Tests\Dummy\DummyNoConstructor;
 use Tests\Dummy\MagicCallDummy;
 
-/**
- *
- * @coversDefaultClass \Bigcommerce\Injector\Reflection\ParameterInspector
- */
+#[CoversClass(ParameterInspector::class)]
 class ParameterInspectorTest extends TestCase
 {
     use ProphecyTrait;
@@ -20,9 +18,6 @@ class ParameterInspectorTest extends TestCase
         parent::setUp();
     }
 
-    /**
-     * @covers ::getSignatureByReflectionClass
-     */
     public function test()
     {
         $ref = new ParameterInspector();

@@ -2,17 +2,12 @@
 namespace Tests\Cache;
 
 use Bigcommerce\Injector\Cache\NoOpServiceCache;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
-/**
- *
- * @coversDefaultClass Bigcommerce\Injector\Cache\NoOpServiceCache
- */
+#[CoversClass(NoOpServiceCache::class)]
 class NoOpServiceCacheTest extends TestCase
 {
-    /**
-     * @covers ::get
-     */
     public function testGet()
     {
         $cache = new NoOpServiceCache();
@@ -20,18 +15,12 @@ class NoOpServiceCacheTest extends TestCase
         $this->assertFalse($cache->get("test"));
     }
 
-    /**
-     * @covers ::get
-     */
     public function testGetMiss()
     {
         $cache = new NoOpServiceCache();
         $this->assertFalse($cache->get("test"));
     }
 
-    /**
-     * @covers ::remove
-     */
     public function testRemoveMiss()
     {
         $cache = new NoOpServiceCache();

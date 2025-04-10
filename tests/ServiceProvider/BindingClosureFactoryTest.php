@@ -4,6 +4,7 @@ namespace Tests\ServiceProvider;
 
 use Bigcommerce\Injector\Injector;
 use Bigcommerce\Injector\ServiceProvider\BindingClosureFactory;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Pimple\Container;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -12,10 +13,7 @@ use ProxyManager\Factory\LazyLoadingValueHolderFactory;
 use ProxyManager\Proxy\ValueHolderInterface;
 use ProxyManager\Proxy\VirtualProxyInterface;
 
-/**
- *
- * @coversDefaultClass \Bigcommerce\Injector\ServiceProvider\BindingClosureFactory
- */
+#[CoversClass(BindingClosureFactory::class)]
 class BindingClosureFactoryTest extends TestCase
 {
     use ProphecyTrait;
@@ -37,9 +35,6 @@ class BindingClosureFactoryTest extends TestCase
         $this->proxyFactory = $this->prophesize(LazyLoadingValueHolderFactory::class);
     }
 
-    /**
-     * @covers ::createAutoWireClosure
-     */
     public function testCreateAutoWireClosure()
     {
         $this->injector->create(self::class, [])->willReturn(123)->shouldBeCalledTimes(1);
@@ -52,9 +47,6 @@ class BindingClosureFactoryTest extends TestCase
         $this->assertEquals(123, $result);
     }
 
-    /**
-     * @covers ::createAutoWireClosure
-     */
     public function testCreateAutoWireClosureWithParameters()
     {
         $parameterFactory = function (Container $app) {

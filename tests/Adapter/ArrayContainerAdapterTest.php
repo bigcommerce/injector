@@ -3,13 +3,14 @@ namespace tests\Adapter;
 
 use Bigcommerce\Injector\Adapter\ArrayContainerAdapter;
 use Bigcommerce\Injector\Adapter\Exception\ServiceNotFoundException;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Class ArrayContainerAdapterTest
  * @package tests\Adapter
- * @coversDefaultClass Bigcommerce\Injector\Adapter\ArrayContainerAdapter
  */
+#[CoversClass(ArrayContainerAdapter::class)]
 class ArrayContainerAdapterTest extends TestCase
 {
     public function testHappy()
@@ -19,9 +20,6 @@ class ArrayContainerAdapterTest extends TestCase
         $this->assertEquals(123, $adapter->get("fish"));
     }
 
-    /**
-     * @covers ::get
-     */
     public function testGetMissing()
     {
         $this->expectException(ServiceNotFoundException::class);
@@ -29,27 +27,18 @@ class ArrayContainerAdapterTest extends TestCase
         $adapter->get("Missing");
     }
 
-    /**
-     * @covers ::get
-     */
     public function testGetFound()
     {
         $adapter = new ArrayContainerAdapter(["found" => 123]);
         $this->assertEquals(123, $adapter->get("found"));
     }
 
-    /**
-     * @covers ::has
-     */
     public function testHasMissing()
     {
         $adapter = new ArrayContainerAdapter([]);
         $this->assertFalse($adapter->has("Missing"));
     }
 
-    /**
-     * @covers ::has
-     */
     public function testHasFound()
     {
         $adapter = new ArrayContainerAdapter(["found" => 123]);
