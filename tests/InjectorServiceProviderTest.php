@@ -2,17 +2,16 @@
 namespace Tests;
 
 use Bigcommerce\Injector\Injector;
+use Bigcommerce\Injector\InjectorServiceProvider;
 use Bigcommerce\Injector\ServiceProvider\BindingClosureFactory;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Pimple\Container;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 
-/**
- *
- * @coversDefaultClass Bigcommerce\Injector\InjectorServiceProvider
- */
+#[CoversClass(InjectorServiceProvider::class)]
 class InjectorServiceProviderTest extends TestCase
 {
     use ProphecyTrait;

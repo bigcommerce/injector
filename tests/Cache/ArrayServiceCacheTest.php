@@ -2,17 +2,12 @@
 namespace Tests\Cache;
 
 use Bigcommerce\Injector\Cache\ArrayServiceCache;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
-/**
- *
- * @coversDefaultClass \Bigcommerce\Injector\Cache\ArrayServiceCache
- */
+#[CoversClass(ArrayServiceCache::class)]
 class ArrayServiceCacheTest extends TestCase
 {
-    /**
-     * @covers ::get
-     */
     public function testGet()
     {
         $cache = new ArrayServiceCache();
@@ -20,18 +15,12 @@ class ArrayServiceCacheTest extends TestCase
         $this->assertEquals(123, $cache->get("test"));
     }
 
-    /**
-     * @covers ::get
-     */
     public function testGetMiss()
     {
         $cache = new ArrayServiceCache();
         $this->assertFalse($cache->get("test"));
     }
 
-    /**
-     * @covers ::remove
-     */
     public function testRemoveMiss()
     {
         $cache = new ArrayServiceCache();

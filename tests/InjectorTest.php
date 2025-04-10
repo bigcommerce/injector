@@ -4,9 +4,8 @@ namespace Tests;
 use Bigcommerce\Injector\Exception\InjectorInvocationException;
 use Bigcommerce\Injector\Injector;
 use Bigcommerce\Injector\Reflection\ClassInspector;
-use Bigcommerce\Injector\Reflection\ParameterInspector;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Container\ContainerInterface;
@@ -19,10 +18,7 @@ use Tests\Dummy\DummySubDependency;
 use Tests\Dummy\DummyVariadicConstructor;
 use TypeError;
 
-/**
- *
- * @coversDefaultClass \Bigcommerce\Injector\Injector
- */
+#[CoversClass(Injector::class)]
 class InjectorTest extends TestCase
 {
     use ProphecyTrait;
@@ -44,9 +40,6 @@ class InjectorTest extends TestCase
         $this->inspector = $this->prophesize(ClassInspector::class);
     }
 
-    /**
-     * @covers ::create
-     */
     public function testCreateNoConstructor()
     {
         $this->inspector->classHasMethod(DummyNoConstructor::class, "__construct")->willReturn(false);
@@ -55,9 +48,6 @@ class InjectorTest extends TestCase
         $this->assertInstanceOf(DummyNoConstructor::class, $instance);
     }
 
-    /**
-     * @covers ::create
-     */
     public function testCreatePrivateConstructor()
     {
         $this->inspector->classHasMethod(DummyPrivateConstructor::class, "__construct")->willReturn(true);
@@ -299,9 +289,6 @@ class InjectorTest extends TestCase
         );
     }
 
-    /**
-     * @covers ::invoke
-     */
     public function testInvokeOnNonObject()
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -312,9 +299,6 @@ class InjectorTest extends TestCase
         $injector->invoke([], "__construct");
     }
 
-    /**
-     * @covers ::invoke
-     */
     public function testInvokeParameters()
     {
         $this->mockInspectorSignatureByClassName(
@@ -333,9 +317,6 @@ class InjectorTest extends TestCase
         $this->assertEquals(90, $instance->getAge());
     }
 
-    /**
-     * @covers ::invoke
-     */
     public function testInvokeMissingRequiredParameter()
     {
         $this->expectException(InjectorInvocationException::class);
@@ -358,9 +339,6 @@ class InjectorTest extends TestCase
         $this->assertEquals(90, $instance->getAge());
     }
 
-    /**
-     * @covers ::invoke
-     */
     public function testInvokeInvalidMethod()
     {
         $this->expectException(InjectorInvocationException::class);
