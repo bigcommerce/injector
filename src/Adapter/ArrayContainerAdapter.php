@@ -52,7 +52,7 @@ class ArrayContainerAdapter implements ContainerInterface
      *
      * @return boolean
      */
-    public function has($id)
+    public function has($id): bool
     {
         return isset($this->arrayContainer[$id]);
     }
