@@ -6,6 +6,7 @@ use Bigcommerce\Injector\Injector;
 use Bigcommerce\Injector\Reflection\ClassInspector;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Container\ContainerInterface;
@@ -227,6 +228,7 @@ class InjectorTest extends TestCase
         $this->mockDummyDependencySignature();
         $this->mockDummySubDependencySignature();
 
+        $this->container->has(Argument::any())->willReturn(false);
         $injector = new Injector($this->container->reveal(), $this->inspector->reveal());
         $injector->addAutoCreate(".*?Dummy.*?");
         $instance = $injector->create(
@@ -262,6 +264,7 @@ class InjectorTest extends TestCase
         $this->mockDummySimpleSignature();
         $this->mockDummyDependencySignature();
 
+        $this->container->has(Argument::any())->willReturn(false);
         $injector = new Injector($this->container->reveal(), $this->inspector->reveal());
         $injector->addAutoCreate(".*?DummyDependency");
         $instance = $injector->create(
@@ -283,6 +286,7 @@ class InjectorTest extends TestCase
         );
         $this->mockDummySimpleSignature();
 
+        $this->container->has(Argument::any())->willReturn(false);
         $injector = new Injector($this->container->reveal(), $this->inspector->reveal());
         $instance = $injector->create(
             DummySimpleConstructor::class
