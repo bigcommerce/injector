@@ -36,6 +36,13 @@ class Injector implements InjectorInterface
      */
     protected $autoCreateWhiteList = [];
 
+    /**
+     * Cached results of canAutoCreate calls
+     *
+     * @var array<string, bool>
+     */
+    private array $autoCreateCache = [];
+
     public function __construct(private ContainerInterface $container, private ClassInspectorInterface $classInspector)
     {
     }
@@ -145,6 +152,8 @@ class Injector implements InjectorInterface
     public function addAutoCreate($regex)
     {
         $this->autoCreateWhiteList[] = "/^" . $regex . "$/ims";
+        // clear cache when new patterns are added
+        $this->autoCreateCache = [];
     }
 
     /**
@@ -161,14 +170,20 @@ class Injector implements InjectorInterface
      * @param string $className
      * @return bool
      */
-    public function canAutoCreate($className)
+    public function canAutoCreate($className): bool
     {
+        if (array_key_exists($className, $this->autoCreateCache)) {
+            return $this->autoCreateCache[$className];
+        }
+
         foreach ($this->autoCreateWhiteList as $regex) {
             if (preg_match($regex, $className)) {
+                $this->autoCreateCache[$className] = true;
                 return true;
             }
         }
 
+        $this->autoCreateCache[$className] = false;
         return false;
     }
 
