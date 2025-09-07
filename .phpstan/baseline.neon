@@ -133,12 +133,6 @@ parameters:
 			path: ../src/Reflection/ParameterInspector.php
 
 		-
-			message: '#^Call to an undefined method ReflectionType\:\:isBuiltin\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: ../src/Reflection/ParameterInspector.php
-
-		-
 			message: '#^Method Bigcommerce\\Injector\\Reflection\\ParameterInspector\:\:getMethodSignature\(\) has parameter \$refClass with generic class ReflectionClass but does not specify its types\: T$#'
 			identifier: missingType.generics
 			count: 1
