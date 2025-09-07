@@ -31,10 +31,7 @@ class ArrayServiceCache implements ServiceCacheInterface, MultiGetCacheInterface
      */
     public function get(string $key): mixed
     {
-        if (!isset($this->values[$key])) {
-            return false;
-        }
-        return $this->values[$key];
+        return $this->values[$key] ?? false;
     }
 
     /**
@@ -57,9 +54,6 @@ class ArrayServiceCache implements ServiceCacheInterface, MultiGetCacheInterface
      */
     public function remove(string $key): void
     {
-        if (!isset($this->values[$key])) {
-            return;
-        }
         unset($this->values[$key]);
     }
 
