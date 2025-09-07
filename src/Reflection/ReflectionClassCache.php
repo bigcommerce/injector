@@ -57,6 +57,10 @@ class ReflectionClassCache implements Countable
 
     private function evictOneObject(): void
     {
-        array_shift($this->map);
+        // Get the least recently used item (first in insertion order)
+        $lruClassName = array_key_first($this->map);
+        if ($lruClassName !== null) {
+            unset($this->map[$lruClassName]);
+        }
     }
 }
