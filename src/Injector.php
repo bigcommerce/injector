@@ -34,7 +34,7 @@ class Injector implements InjectorInterface
      *
      * @var string[]
      */
-    protected $autoCreateWhiteList = [];
+    protected array $autoCreateWhiteList = [];
 
     /**
      * Cached results of canAutoCreate calls
@@ -43,7 +43,7 @@ class Injector implements InjectorInterface
      */
     private array $autoCreateCache = [];
 
-    public function __construct(private ContainerInterface $container, private ClassInspectorInterface $classInspector)
+    public function __construct(private readonly ContainerInterface $container, private readonly ClassInspectorInterface $classInspector)
     {
     }
 
@@ -128,7 +128,7 @@ class Injector implements InjectorInterface
                 $parameters
             );
 
-            return call_user_func_array([$instance, $methodName], $parameters);
+            return $instance->{$methodName}(...$parameters);
         } catch (MissingRequiredParameterException $e) {
             throw new InjectorInvocationException(
                 "Can't invoke method $className::$methodName()" .
