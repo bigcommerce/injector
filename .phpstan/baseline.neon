@@ -121,12 +121,6 @@ parameters:
 			path: ../src/InjectorServiceProvider.php
 
 		-
-			message: '#^Method Bigcommerce\\Injector\\InjectorServiceProvider\:\:get\(\) has InvalidArgumentException in PHPDoc @throws tag but it''s not thrown\.$#'
-			identifier: throws.unusedType
-			count: 1
-			path: ../src/InjectorServiceProvider.php
-
-		-
 			message: '#^Call to an undefined method ReflectionType\:\:getName\(\)\.$#'
 			identifier: method.notFound
 			count: 1
