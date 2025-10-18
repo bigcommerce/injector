@@ -15,12 +15,12 @@ class BindingClosureFactory
     /**
      * @var LazyLoadingValueHolderFactory
      */
-    private $proxyFactory;
+    private LazyLoadingValueHolderFactory $proxyFactory;
 
     /**
      * @var InjectorInterface
      */
-    private $injector;
+    private InjectorInterface $injector;
 
     /**
      * BindingClosureFactory constructor.
@@ -43,9 +43,10 @@ class BindingClosureFactory
      */
     public function createAutoWireClosure($className, ?callable $parameterFactory = null)
     {
-        return function (Container $app) use ($className, $parameterFactory) {
+        $injector = $this->injector;
+        return static function (Container $app) use ($className, $parameterFactory, $injector) {
             $parameters = $parameterFactory ? $parameterFactory($app) : [];
-            return $this->injector->create($className, $parameters);
+            return $injector->create($className, $parameters);
         };
     }
 
@@ -64,9 +65,18 @@ class BindingClosureFactory
      */
     public function createAutoWireProxyClosure($className, ?callable $parameterFactory = null)
     {
-        return function (Container $app) use ($className, $parameterFactory) {
-            $serviceFactory = $this->createAutoWireClosure($className, $parameterFactory);
-            return $this->createProxy($className, $serviceFactory, $app);
+        $proxyFactory = $this->proxyFactory;
+        $createAutoWireClosure = [$this, 'createAutoWireClosure'];
+        return static function (Container $app) use ($className, $parameterFactory, $proxyFactory, $createAutoWireClosure) {
+            $serviceFactory = $createAutoWireClosure($className, $parameterFactory);
+            return $proxyFactory->createProxy(
+                $className,
+                static function (&$wrappedObject, $proxy, $method, $parameters, &$initializer) use ($serviceFactory, $app) {
+                    $wrappedObject = $serviceFactory($app);
+                    $initializer = null;
+                    return true;
+                }
+            );
         };
     }
 
@@ -83,9 +93,10 @@ class BindingClosureFactory
      */
     public function createServiceProxy(Container $app, string $serviceName, string $serviceClassName)
     {
-        return $this->createProxy(
+        $proxyFactory = $this->proxyFactory;
+        return $proxyFactory->createProxy(
             $serviceClassName,
-            function (Container $app) use ($serviceName, $serviceClassName) {
+            static function (&$wrappedObject, $proxy, $method, $parameters, &$initializer) use ($app, $serviceName, $serviceClassName) {
                 $service = $app->offsetGet($serviceName);
                 if (! ($service instanceof $serviceClassName)) {
                     $invalidClassName = get_class($service);
@@ -96,29 +107,7 @@ class BindingClosureFactory
                         "binding and make sure it specifies the actual class name that will be returned by that service."
                     );
                 }
-                return $service;
-            },
-            $app
-        );
-    }
-
-    /**
-     * Create a project object for the specified ClassName bound to the given ServiceFactory method.
-     * @param string $className
-     * @param callable $serviceFactory
-     * @param Container $app
-     * @return \ProxyManager\Proxy\VirtualProxyInterface
-     */
-    private function createProxy($className, callable $serviceFactory, Container $app)
-    {
-        return $this->proxyFactory->createProxy(
-            $className,
-            function (&$wrappedObject, $proxy, $method, $parameters, &$initializer) use (
-                $className,
-                $serviceFactory,
-                $app
-            ) {
-                $wrappedObject = $serviceFactory($app);
+                $wrappedObject = $service;
                 $initializer = null;
                 return true;
             }
