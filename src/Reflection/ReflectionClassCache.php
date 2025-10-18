@@ -27,10 +27,14 @@ class ReflectionClassCache implements Countable
      */
     public function put(ReflectionClass $reflection): void
     {
-        if (count($this->map) >= $this->maxSize) {
+        $className = $reflection->getName();
+        // if already present, remove it so we can re-insert it as most recently used item
+        if (isset($this->map[$className])) {
+            unset($this->map[$className]);
+        } elseif (count($this->map) >= $this->maxSize) {
             $this->evictOneObject();
         }
-        $this->map[$reflection->getName()] = $reflection;
+        $this->map[$className] = $reflection;
     }
 
     /**
@@ -40,7 +44,11 @@ class ReflectionClassCache implements Countable
     public function get(string $className): ?ReflectionClass
     {
         if (isset($this->map[$className])) {
-            return $this->map[$className];
+            // promote to most recently used item by re-inserting this to the end of the array
+            $reflection = $this->map[$className];
+            unset($this->map[$className]);
+            $this->map[$className] = $reflection;
+            return $reflection;
         }
         return null;
     }
@@ -57,7 +65,6 @@ class ReflectionClassCache implements Countable
 
     private function evictOneObject(): void
     {
-        // Get the least recently used item (first in insertion order)
         $lruClassName = array_key_first($this->map);
         if ($lruClassName !== null) {
             unset($this->map[$lruClassName]);
