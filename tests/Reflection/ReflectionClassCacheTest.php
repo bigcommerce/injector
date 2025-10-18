@@ -68,4 +68,44 @@ class ReflectionClassCacheTest extends TestCase
 
         $this->assertEquals(2, $result);
     }
+
+    public function testGetPromotesToMostRecentlyUsedSoItDoesNotEvictNext(): void
+    {
+        $cache = new ReflectionClassCache(2);
+
+        $classA = DummyDependency::class;
+        $classB = DummyNoConstructor::class;
+        $classC = DummySimpleConstructor::class;
+
+        $cache->put(new ReflectionClass($classA));
+        $cache->put(new ReflectionClass($classB));
+
+        $this->assertNotNull($cache->get($classA));
+
+        $cache->put(new ReflectionClass($classC));
+
+        $this->assertTrue($cache->has($classA));
+        $this->assertFalse($cache->has($classB));
+        $this->assertTrue($cache->has($classC));
+    }
+
+    public function testPutRefreshesRecencySoReinsertedEntryIsNotEvicted(): void
+    {
+        $cache = new ReflectionClassCache(2);
+
+        $classA = DummyDependency::class;
+        $classB = DummyNoConstructor::class;
+        $classC = DummySimpleConstructor::class;
+
+        $cache->put(new ReflectionClass($classA));
+        $cache->put(new ReflectionClass($classB));
+
+        $cache->put(new ReflectionClass($classA));
+
+        $cache->put(new ReflectionClass($classC));
+
+        $this->assertTrue($cache->has($classA));
+        $this->assertFalse($cache->has($classB));
+        $this->assertTrue($cache->has($classC));
+    }
 }
