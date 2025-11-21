@@ -73,9 +73,8 @@ class ClassInspector implements ClassInspectorInterface
      */
     private function getReflectionClass(string $class): ReflectionClass
     {
-        if ($this->reflectionClassCache->has($class)) {
-            $reflectionClass = $this->reflectionClassCache->get($class);
-        } else {
+        $reflectionClass = $this->reflectionClassCache->get($class);
+        if ($reflectionClass === null) {
             $reflectionClass = new ReflectionClass($class);
             $this->stats->incrementReflectionClassesCreated();
             $this->reflectionClassCache->put($reflectionClass);
