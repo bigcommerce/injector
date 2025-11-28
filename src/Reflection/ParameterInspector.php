@@ -1,6 +1,8 @@
 <?php
 namespace Bigcommerce\Injector\Reflection;
 
+use ReflectionNamedType;
+
 /**
  * The ParameterInspector exposes cached reflection of a methods signature enabling auto-wiring of dependencies within
  * the Injector. This class does expose the \ReflectionParameter or utilise Parameter value objects but
@@ -64,7 +66,7 @@ class ParameterInspector
                     "name" => $name
                 ];
                 $type = $parameter->getType();
-                if ($type && method_exists($type, 'isBuiltin') && !$type->isBuiltin()) {
+                if ($type instanceof ReflectionNamedType && !$type->isBuiltin()) {
                     $parameterSignature['type'] = $type->getName();
                 }
                 if ($parameter->isDefaultValueAvailable()) {
@@ -77,8 +79,8 @@ class ParameterInspector
                 $methodSignature[] = $parameterSignature;
             }
         } catch (\ReflectionException $e) {
-            //The requested method doesn't exist on this class. Check if the class provides a magic call method or die.
-            if (!method_exists($className, "__call")) {
+            // The requested method doesn't exist on this class. Check if the class provides a magic call method or die.
+            if (!$refClass->hasMethod("__call")) {
                 throw $e;
             }
         }
