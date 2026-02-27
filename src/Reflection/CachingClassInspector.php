@@ -9,6 +9,11 @@ use ReflectionException;
 
 class CachingClassInspector implements ClassInspectorInterface
 {
+    /**
+     * @var array<string, array{0: array|false|null}>
+     */
+    private array $constructorCache = [];
+
     public function __construct(
         private readonly ClassInspector $classInspector,
         private readonly ServiceCacheInterface $serviceCache,
@@ -25,6 +30,10 @@ class CachingClassInspector implements ClassInspectorInterface
      */
     public function warmCache(string $class, string $method): void
     {
+        if ($method === '__construct') {
+            $this->getCallableConstructorSignature($class);
+            return;
+        }
         if ($this->classHasMethod($class, $method)) {
             if ($this->methodIsPublic($class, $method)) {
                 $this->getMethodSignature($class, $method);
@@ -93,6 +102,16 @@ class CachingClassInspector implements ClassInspectorInterface
         }
 
         return $value;
+    }
+
+    public function getCallableConstructorSignature(string $class): array|false|null
+    {
+        if (isset($this->constructorCache[$class])) {
+            return $this->constructorCache[$class][0];
+        }
+        $result = $this->classInspector->getCallableConstructorSignature($class);
+        $this->constructorCache[$class] = [$result];
+        return $result;
     }
 
     public function getStats(): ClassInspectorStats

@@ -38,5 +38,16 @@ interface ClassInspectorInterface
      */
     public function getMethodSignature(string $class, string $method): array;
 
+    /**
+     * Returns null if the class has no constructor
+     * Returns false if the constructor is not public
+     * Returns the constructor signature array if the constructor is public
+     *
+     * @param string $class
+     * @return array|false|null
+     * @throws ReflectionException
+     */
+    public function getCallableConstructorSignature(string $class): array|false|null;
+
     public function getStats(): ClassInspectorStats;
 }

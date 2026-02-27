@@ -57,6 +57,19 @@ class ClassInspector implements ClassInspectorInterface
         return $this->parameterInspector->getSignatureByReflectionClass($reflectionClass, $method);
     }
 
+    public function getCallableConstructorSignature(string $class): array|false|null
+    {
+        $reflectionClass = $this->getReflectionClass($class);
+        if (!$reflectionClass->hasMethod('__construct')) {
+            return null;
+        }
+        $constructor = $reflectionClass->getMethod('__construct');
+        if (!$constructor->isPublic()) {
+            return false;
+        }
+        return $this->parameterInspector->getSignatureByReflectionMethod($constructor);
+    }
+
     public function getStats(): ClassInspectorStats
     {
         return $this->stats;

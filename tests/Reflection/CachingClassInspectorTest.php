@@ -38,7 +38,7 @@ class CachingClassInspectorTest extends TestCase
         );
     }
 
-    public function testWarmCachePopulatesCaches(): void
+    public function testWarmCachePopulatesCachesForNonConstructorMethod(): void
     {
         $this->serviceCache->has(Argument::cetera())->willReturn(false);
         $this->classInspector->classHasMethod(DummyDependency::class, 'isEnabled')->willReturn(true);
@@ -53,6 +53,53 @@ class CachingClassInspectorTest extends TestCase
             ->shouldHaveBeenCalled();
         $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled::signature", [])
             ->shouldHaveBeenCalled();
+    }
+
+    public function testWarmCacheUsesOptimizedPathForConstructor(): void
+    {
+        $signature = [['name' => 'dependency', 'type' => 'SomeClass']];
+        $this->classInspector->getCallableConstructorSignature(DummyDependency::class)
+            ->willReturn($signature);
+
+        $this->subject->warmCache(DummyDependency::class, '__construct');
+
+        $this->classInspector->classHasMethod(Argument::cetera())->shouldNotHaveBeenCalled();
+        $this->classInspector->methodIsPublic(Argument::cetera())->shouldNotHaveBeenCalled();
+        $this->classInspector->getMethodSignature(Argument::cetera())->shouldNotHaveBeenCalled();
+    }
+
+    public function testGetCallableConstructorSignatureCachesResult(): void
+    {
+        $signature = [['name' => 'dependency', 'type' => 'SomeClass']];
+        $this->classInspector->getCallableConstructorSignature(DummyDependency::class)
+            ->willReturn($signature)
+            ->shouldBeCalledOnce();
+
+        $result1 = $this->subject->getCallableConstructorSignature(DummyDependency::class);
+        $result2 = $this->subject->getCallableConstructorSignature(DummyDependency::class);
+
+        $this->assertEquals($signature, $result1);
+        $this->assertEquals($signature, $result2);
+    }
+
+    public function testGetCallableConstructorSignatureReturnsNullForNoConstructor(): void
+    {
+        $this->classInspector->getCallableConstructorSignature(DummyDependency::class)
+            ->willReturn(null);
+
+        $result = $this->subject->getCallableConstructorSignature(DummyDependency::class);
+
+        $this->assertNull($result);
+    }
+
+    public function testGetCallableConstructorSignatureReturnsFalseForNonPublicConstructor(): void
+    {
+        $this->classInspector->getCallableConstructorSignature(DummyDependency::class)
+            ->willReturn(false);
+
+        $result = $this->subject->getCallableConstructorSignature(DummyDependency::class);
+
+        $this->assertFalse($result);
     }
 
     public function testClassHasMethodUsesCachedResult(): void
