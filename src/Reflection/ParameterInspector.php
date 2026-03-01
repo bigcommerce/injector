@@ -1,6 +1,7 @@
 <?php
 namespace Bigcommerce\Injector\Reflection;
 
+use ReflectionMethod;
 use ReflectionNamedType;
 
 /**
@@ -42,10 +43,10 @@ class ParameterInspector
     /**
      * Extract the method signature directly from a ReflectionMethod, avoiding a redundant getMethod() call
      *
-     * @param \ReflectionMethod $method
+     * @param ReflectionMethod $method
      * @return array{'name': string, 'type'?: string, 'default'?: mixed, 'variadic'?: bool}[]
      */
-    public function getSignatureByReflectionMethod(\ReflectionMethod $method): array
+    public function getSignatureByReflectionMethod(ReflectionMethod $method): array
     {
         return $this->buildSignatureFromParameters($method->getParameters());
     }
