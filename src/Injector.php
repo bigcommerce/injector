@@ -65,11 +65,13 @@ class Injector implements InjectorInterface
      */
     public function create($className, $parameters = [])
     {
-        if (!$this->classInspector->classHasMethod($className, '__construct')) {
+        $signature = $this->classInspector->getCallableConstructorSignature($className);
+
+        if ($signature === null) {
             return new $className();
         }
 
-        if (!$this->classInspector->methodIsPublic($className, '__construct')) {
+        if ($signature === false) {
             throw new InjectorInvocationException(
                 "Injector failed to create $className - constructor isn't public." .
                 " Do you need to use a static factory method instead?"
@@ -77,7 +79,6 @@ class Injector implements InjectorInterface
         }
 
         try {
-            $signature = $this->classInspector->getMethodSignature($className, '__construct');
             $parameters = $this->buildParameterArray($signature, $parameters);
 
             return new $className(...$parameters);
@@ -172,8 +173,10 @@ class Injector implements InjectorInterface
      */
     public function canAutoCreate($className): bool
     {
-        if (array_key_exists($className, $this->autoCreateCache)) {
-            return $this->autoCreateCache[$className];
+        // values are true/false (never null), so null means "not cached"
+        $cached = $this->autoCreateCache[$className] ?? null;
+        if ($cached !== null) {
+            return $cached;
         }
 
         foreach ($this->autoCreateWhiteList as $regex) {
@@ -200,6 +203,12 @@ class Injector implements InjectorInterface
      */
     private function buildParameterArray($methodSignature, $providedParameters)
     {
+        // when no parameters are explicitly provided (the common autowiring case), skip all the name/index/type lookups
+        // against $providedParameters entirely
+        if (empty($providedParameters)) {
+            return $this->buildParameterArrayFromContainer($methodSignature);
+        }
+
         $parameters = [];
         foreach ($methodSignature as $position => $parameterData) {
             if (!isset($parameterData['variadic'])) {
@@ -212,6 +221,49 @@ class Injector implements InjectorInterface
                     $parameters[] = $variadicParameter;
                 }
             }
+        }
+        return $parameters;
+    }
+
+    /**
+     * Fast path for the common case: resolve all parameters from the container, auto-create, or defaults
+     * Skips the 3 array_key_exists lookups per parameter that resolveParameter does against $providedParameters
+     *
+     * @param array $methodSignature
+     * @return array
+     * @throws MissingRequiredParameterException
+     * @throws InjectorInvocationException
+     * @throws ReflectionException
+     */
+    private function buildParameterArrayFromContainer($methodSignature)
+    {
+        $parameters = [];
+        foreach ($methodSignature as $position => $parameterData) {
+            if (isset($parameterData['variadic'])) {
+                // variadic with no provided params = nothing to pipe
+                break;
+            }
+            $type = $parameterData['type'] ?? false;
+            if ($type) {
+                if ($this->container->has($type)) {
+                    $parameters[$position] = $this->container->get($type);
+                    continue;
+                }
+                if ($this->canAutoCreate($type)) {
+                    $parameters[$position] = $this->create($type);
+                    continue;
+                }
+            }
+            if (array_key_exists('default', $parameterData)) {
+                $parameters[$position] = $parameterData['default'];
+                continue;
+            }
+            $name = $parameterData['name'];
+            throw new MissingRequiredParameterException(
+                $name,
+                $type,
+                sprintf('Could not find required parameter "%s" for method', $name)
+            );
         }
         return $parameters;
     }

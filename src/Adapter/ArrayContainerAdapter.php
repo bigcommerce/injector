@@ -38,7 +38,7 @@ class ArrayContainerAdapter implements ContainerInterface
      */
     public function get($id)
     {
-        if (!$this->has($id)) {
+        if (!isset($this->arrayContainer[$id])) {
             throw new ServiceNotFoundException("Service not found in container ($id).");
         }
         return $this->arrayContainer[$id];

@@ -43,7 +43,7 @@ class InjectorTest extends TestCase
 
     public function testCreateNoConstructor()
     {
-        $this->inspector->classHasMethod(DummyNoConstructor::class, "__construct")->willReturn(false);
+        $this->inspector->getCallableConstructorSignature(DummyNoConstructor::class)->willReturn(null);
         $injector = new Injector($this->container->reveal(), $this->inspector->reveal());
         $instance = $injector->create(DummyNoConstructor::class);
         $this->assertInstanceOf(DummyNoConstructor::class, $instance);
@@ -51,8 +51,7 @@ class InjectorTest extends TestCase
 
     public function testCreatePrivateConstructor()
     {
-        $this->inspector->classHasMethod(DummyPrivateConstructor::class, "__construct")->willReturn(true);
-        $this->inspector->methodIsPublic(DummyPrivateConstructor::class, "__construct")->willReturn(false);
+        $this->inspector->getCallableConstructorSignature(DummyPrivateConstructor::class)->willReturn(false);
         $this->expectException(InjectorInvocationException::class);
         $this->expectExceptionMessageMatches(
             "/constructor isn't public/ims"
@@ -361,67 +360,39 @@ class InjectorTest extends TestCase
 
     private function mockDummyDependencySignature()
     {
-        $this->inspector->classHasMethod(DummyDependency::class,"__construct")
-            ->willReturn(true);
-        $this->inspector->methodIsPublic(DummyDependency::class,"__construct")
-            ->willReturn(true);
-        $this->mockInspectorSignatureByClassName(
-            DummyDependency::class,
-            "__construct",
-            [
+        $this->inspector->getCallableConstructorSignature(DummyDependency::class)
+            ->willReturn([
                 ["name" => "dependency", "type" => DummySubDependency::class],
                 ["name" => "enabled", "default" => true]
-            ]
-        );
+            ]);
     }
 
     private function mockDummySubDependencySignature()
     {
-        $this->inspector->classHasMethod(DummySubDependency::class,"__construct")
-            ->willReturn(true);
-        $this->inspector->methodIsPublic(DummySubDependency::class,"__construct")
-            ->willReturn(true);
-        $this->mockInspectorSignatureByClassName(
-            DummySubDependency::class,
-            "__construct",
-            [
+        $this->inspector->getCallableConstructorSignature(DummySubDependency::class)
+            ->willReturn([
                 ["name" => "enabled", "default" => true]
-            ]
-        );
+            ]);
     }
 
     private function mockDummySimpleSignature()
     {
-        $this->inspector->classHasMethod(DummySimpleConstructor::class,"__construct")
-            ->willReturn(true);
-        $this->inspector->methodIsPublic(DummySimpleConstructor::class,"__construct")
-            ->willReturn(true);
-        $this->mockInspectorSignatureByClassName(
-            DummySimpleConstructor::class,
-            "__construct",
-            [
+        $this->inspector->getCallableConstructorSignature(DummySimpleConstructor::class)
+            ->willReturn([
                 ["name" => "dummyNoConstructor", "type" => DummyNoConstructor::class],
                 ["name" => "dummyDependency", "type" => DummyDependency::class],
                 ["name" => "name"],
                 ["name" => "age", "default" => 25],
                 ["name" => "args", "variadic" => true],
-            ]
-        );
+            ]);
     }
 
     private function mockDummyVariadicSignature()
     {
-        $this->inspector->classHasMethod(DummyVariadicConstructor::class,"__construct")
-            ->willReturn(true);
-        $this->inspector->methodIsPublic(DummyVariadicConstructor::class,"__construct")
-            ->willReturn(true);
-        $this->mockInspectorSignatureByClassName(
-            DummyVariadicConstructor::class,
-            "__construct",
-            [
+        $this->inspector->getCallableConstructorSignature(DummyVariadicConstructor::class)
+            ->willReturn([
                 ["name" => "args", "variadic" => true],
-            ]
-        );
+            ]);
     }
 
     private function mockInspectorSignatureByClassName($className, $methodName, $returns)

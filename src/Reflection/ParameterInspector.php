@@ -1,6 +1,7 @@
 <?php
 namespace Bigcommerce\Injector\Reflection;
 
+use ReflectionMethod;
 use ReflectionNamedType;
 
 /**
@@ -40,6 +41,17 @@ class ParameterInspector
     }
 
     /**
+     * Extract the method signature directly from a ReflectionMethod, avoiding a redundant getMethod() call
+     *
+     * @param ReflectionMethod $method
+     * @return array{'name': string, 'type'?: string, 'default'?: mixed, 'variadic'?: bool}[]
+     */
+    public function getSignatureByReflectionMethod(ReflectionMethod $method): array
+    {
+        return $this->buildSignatureFromParameters($method->getParameters());
+    }
+
+    /**
      * Returns an array of parameters used by the given method. Fields for each parameter include:
      *  - 'name' - Name of the parameter
      *  - 'type' - Fully Qualified Class Name of the parameter if it is an object
@@ -57,32 +69,43 @@ class ParameterInspector
             $refClass = new \ReflectionClass($className);
         }
 
-        $methodSignature = [];
         try {
             $method = $refClass->getMethod($methodName);
-            foreach ($method->getParameters() as $parameter) {
-                $name = $parameter->getName();
-                $parameterSignature = [
-                    "name" => $name
-                ];
-                $type = $parameter->getType();
-                if ($type instanceof ReflectionNamedType && !$type->isBuiltin()) {
-                    $parameterSignature['type'] = $type->getName();
-                }
-                if ($parameter->isDefaultValueAvailable()) {
-                    $parameterSignature['default'] = $parameter->getDefaultValue();
-                }
-                if ($parameter->isVariadic()) {
-                    $parameterSignature['variadic'] = true;
-                }
-
-                $methodSignature[] = $parameterSignature;
-            }
+            return $this->buildSignatureFromParameters($method->getParameters());
         } catch (\ReflectionException $e) {
             // The requested method doesn't exist on this class. Check if the class provides a magic call method or die.
-            if (!$refClass->hasMethod("__call")) {
+            if (!$refClass->hasMethod('__call')) {
                 throw $e;
             }
+        }
+        return [];
+    }
+
+    /**
+     * Build a signature array from a list of ReflectionParameters
+     * This is the shared implementation used by both getMethodSignature and getSignatureByReflectionMethod
+     *
+     * @param \ReflectionParameter[] $reflectionParameters
+     * @return array{'name': string, 'type'?: string, 'default'?: mixed, 'variadic'?: bool}[]
+     */
+    private function buildSignatureFromParameters(array $reflectionParameters): array
+    {
+        $methodSignature = [];
+        foreach ($reflectionParameters as $parameter) {
+            $parameterSignature = [
+                'name' => $parameter->getName()
+            ];
+            $type = $parameter->getType();
+            if ($type instanceof ReflectionNamedType && !$type->isBuiltin()) {
+                $parameterSignature['type'] = $type->getName();
+            }
+            if ($parameter->isDefaultValueAvailable()) {
+                $parameterSignature['default'] = $parameter->getDefaultValue();
+            }
+            if ($parameter->isVariadic()) {
+                $parameterSignature['variadic'] = true;
+            }
+            $methodSignature[] = $parameterSignature;
         }
         return $methodSignature;
     }
