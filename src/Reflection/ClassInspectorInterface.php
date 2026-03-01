@@ -6,6 +6,9 @@ namespace Bigcommerce\Injector\Reflection;
 
 use ReflectionException;
 
+/**
+ * @internal
+ */
 interface ClassInspectorInterface
 {
     /**
