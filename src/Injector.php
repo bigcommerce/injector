@@ -43,6 +43,9 @@ class Injector implements InjectorInterface
      */
     private array $autoCreateCache = [];
 
+    /** @var array<string, bool> cached container->has() results per type */
+    private array $containerHasCache = [];
+
     public function __construct(private readonly ContainerInterface $container, private readonly ClassInspectorInterface $classInspector)
     {
     }
@@ -144,16 +147,12 @@ class Injector implements InjectorInterface
     }
 
     /**
-     * Add a regular expression to match classes that the Injector is permitted to construct as dependencies for other
-     * objects its creating, even if they haven't been defined in the service container.
-     *
      * @param string $regex
      * @return void
      */
     public function addAutoCreate($regex)
     {
         $this->autoCreateWhiteList[] = "/^" . $regex . "$/ims";
-        // clear cache when new patterns are added
         $this->autoCreateCache = [];
     }
 
@@ -166,14 +165,11 @@ class Injector implements InjectorInterface
     }
 
     /**
-     * Check whether the Injector has been configured to allow automatic construction of the given FQCN as a dependency
-     *
      * @param string $className
      * @return bool
      */
     public function canAutoCreate($className): bool
     {
-        // values are true/false (never null), so null means "not cached"
         $cached = $this->autoCreateCache[$className] ?? null;
         if ($cached !== null) {
             return $cached;
@@ -190,9 +186,12 @@ class Injector implements InjectorInterface
         return false;
     }
 
+    private function containerHas(string $type): bool
+    {
+        return $this->containerHasCache[$type] ??= $this->container->has($type);
+    }
+
     /**
-     * Construct the parameter array to be passed to a method call based on its parameter signature
-     *
      * @param array $methodSignature
      * @param array $providedParameters
      * @return array
@@ -203,8 +202,6 @@ class Injector implements InjectorInterface
      */
     private function buildParameterArray($methodSignature, $providedParameters)
     {
-        // when no parameters are explicitly provided (the common autowiring case), skip all the name/index/type lookups
-        // against $providedParameters entirely
         if (empty($providedParameters)) {
             return $this->buildParameterArrayFromContainer($methodSignature);
         }
@@ -214,9 +211,6 @@ class Injector implements InjectorInterface
             if (!isset($parameterData['variadic'])) {
                 $parameters[$position] = $this->resolveParameter($position, $parameterData, $providedParameters);
             } else {
-                // variadic parameter must be the last one, so
-                // the rest of the provided paramters should be piped
-                // into it to mimic native php behaviour
                 foreach ($providedParameters as $variadicParameter) {
                     $parameters[] = $variadicParameter;
                 }
@@ -226,8 +220,7 @@ class Injector implements InjectorInterface
     }
 
     /**
-     * Fast path for the common case: resolve all parameters from the container, auto-create, or defaults
-     * Skips the 3 array_key_exists lookups per parameter that resolveParameter does against $providedParameters
+     * Resolve all parameters purely from container / auto-create / defaults (no provided params).
      *
      * @param array $methodSignature
      * @return array
@@ -238,24 +231,23 @@ class Injector implements InjectorInterface
     private function buildParameterArrayFromContainer($methodSignature)
     {
         $parameters = [];
-        foreach ($methodSignature as $position => $parameterData) {
+        foreach ($methodSignature as $parameterData) {
             if (isset($parameterData['variadic'])) {
-                // variadic with no provided params = nothing to pipe
                 break;
             }
             $type = $parameterData['type'] ?? false;
             if ($type) {
-                if ($this->container->has($type)) {
-                    $parameters[$position] = $this->container->get($type);
+                if ($this->containerHas($type)) {
+                    $parameters[] = $this->container->get($type);
                     continue;
                 }
                 if ($this->canAutoCreate($type)) {
-                    $parameters[$position] = $this->create($type);
+                    $parameters[] = $this->create($type);
                     continue;
                 }
             }
             if (array_key_exists('default', $parameterData)) {
-                $parameters[$position] = $parameterData['default'];
+                $parameters[] = $parameterData['default'];
                 continue;
             }
             $name = $parameterData['name'];
@@ -269,53 +261,43 @@ class Injector implements InjectorInterface
     }
 
     /**
-     * This method will hunt for dependencies to satisfy the parameter requirements in the following order:
-     *  - Key name in provided parameters (named parameters)
-     *  - Index in provided parameters
-     *  - FQCN in provided parameters
-     *  - FQCN in container
-     *  - Default value against method signature
-     *  - Auto create white list of classes to recursively create
+     * Resolve a single parameter by searching: provided params (by name, index, type),
+     * then the container, then auto-create, then defaults.
+     *
      * @param int $position
      * @param array $parameterData
      * @param array $providedParameters
      * @throws MissingRequiredParameterException
-     * @return mixed The resolved parameter value
+     * @return mixed
      */
     private function resolveParameter($position, $parameterData, &$providedParameters)
     {
         $name = $parameterData['name'];
         $type = $parameterData['type'] ?? false;
         if (array_key_exists($name, $providedParameters)) {
-            // Found the dependency by name in providedParameters
             $result = $providedParameters[$name];
             unset($providedParameters[$name]);
             return $result;
         }
         if (array_key_exists($position, $providedParameters)) {
-            // Found the dependency index in providedParameters
             $result = $providedParameters[$position];
             unset($providedParameters[$position]);
             return $result;
         }
         if ($type) {
             if (array_key_exists($type, $providedParameters)) {
-                // Found the dependency by type in providedParameters
                 $result = $providedParameters[$type];
                 unset($providedParameters[$type]);
                 return $result;
             }
-            if ($this->container->has($type)) {
-                // Found the dependency by type in the container
+            if ($this->containerHas($type)) {
                 return $this->container->get($type);
             }
             if ($this->canAutoCreate($type)) {
-                // Auto create white list - recursion
                 return $this->create($type);
             }
         }
         if (array_key_exists("default", $parameterData)) {
-            // Default value defined in signature
             return $parameterData['default'];
         }
         throw new MissingRequiredParameterException(
