@@ -31,7 +31,7 @@ interface InjectorInterface
      *  - Index: [ 3 => new RedisCache()] will inject RedisCache to the 4th parameter (zero index)
      *
      * @param string $className The fully qualified class name for the object we're creating
-     * @param array $parameters An optional array of additional parameters to pass to the created objects constructor.
+     * @param array<int|string, mixed> $parameters An optional array of additional parameters to pass to the created objects constructor.
      * @throws \Exception
      * @return object
      */
@@ -50,7 +50,7 @@ interface InjectorInterface
      *
      * @param object $instance
      * @param string $methodName
-     * @param array $parameters
+     * @param array<int|string, mixed> $parameters
      * @return mixed
      * @throws \Exception
      */

@@ -13,13 +13,13 @@ use Psr\Container\NotFoundExceptionInterface;
 class ArrayContainerAdapter implements ContainerInterface
 {
     /**
-     * @var array|\ArrayAccess
+     * @var array<string, mixed>|\ArrayAccess<string, mixed>
      */
     private $arrayContainer;
 
     /**
      * ArrayContainerAdapter constructor.
-     * @param array|\ArrayAccess $arrayContainer
+     * @param array<string, mixed>|\ArrayAccess<string, mixed> $arrayContainer
      */
     public function __construct($arrayContainer)
     {

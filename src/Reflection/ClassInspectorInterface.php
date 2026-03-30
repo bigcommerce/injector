@@ -47,7 +47,7 @@ interface ClassInspectorInterface
      * Returns the constructor signature array if the constructor is public
      *
      * @param string $class
-     * @return array|false|null
+     * @return array<string, mixed>[]|false|null
      * @throws ReflectionException
      */
     public function getCallableConstructorSignature(string $class): array|false|null;

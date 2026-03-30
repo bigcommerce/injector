@@ -57,7 +57,7 @@ class Injector implements InjectorInterface
      *  - Index: [ 3 => new RedisCache()] will inject RedisCache to the 4th parameter (zero index)
      *
      * @param string $className The fully qualified class name for the object we're creating
-     * @param array $parameters An optional array of additional parameters to pass to the created objects constructor.
+     * @param array<int|string, mixed> $parameters An optional array of additional parameters to pass to the created objects constructor.
      * @return object
      * @throws InjectorInvocationException
      * @throws InvalidArgumentException
@@ -110,7 +110,7 @@ class Injector implements InjectorInterface
      *
      * @param object $instance
      * @param string $methodName
-     * @param array $parameters
+     * @param array<int|string, mixed> $parameters
      * @return mixed
      * @throws InjectorInvocationException
      * @throws InvalidArgumentException
@@ -158,7 +158,7 @@ class Injector implements InjectorInterface
     }
 
     /**
-     * @return \string[]
+     * @return string[]
      */
     public function getAutoCreateWhiteList()
     {
@@ -193,12 +193,11 @@ class Injector implements InjectorInterface
     /**
      * Construct the parameter array to be passed to a method call based on its parameter signature
      *
-     * @param array $methodSignature
-     * @param array $providedParameters
-     * @return array
+     * @param array<int, array<string, mixed>> $methodSignature
+     * @param array<int|string, mixed> $providedParameters
+     * @return array<int, mixed>
      * @throws InjectorInvocationException
      * @throws MissingRequiredParameterException
-     * @throws InvalidArgumentException
      * @throws ReflectionException
      */
     private function buildParameterArray($methodSignature, $providedParameters)
@@ -229,8 +228,8 @@ class Injector implements InjectorInterface
      * Fast path for the common case: resolve all parameters from the container, auto-create, or defaults
      * Skips the 3 array_key_exists lookups per parameter that resolveParameter does against $providedParameters
      *
-     * @param array $methodSignature
-     * @return array
+     * @param array<int, array<string, mixed>> $methodSignature
+     * @return array<int, mixed>
      * @throws MissingRequiredParameterException
      * @throws InjectorInvocationException
      * @throws ReflectionException
@@ -277,8 +276,8 @@ class Injector implements InjectorInterface
      *  - Default value against method signature
      *  - Auto create white list of classes to recursively create
      * @param int $position
-     * @param array $parameterData
-     * @param array $providedParameters
+     * @param array<string, mixed> $parameterData
+     * @param array<int|string, mixed> $providedParameters
      * @throws MissingRequiredParameterException
      * @return mixed The resolved parameter value
      */

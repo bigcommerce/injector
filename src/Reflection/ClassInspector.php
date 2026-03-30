@@ -57,6 +57,11 @@ class ClassInspector implements ClassInspectorInterface
         return $this->parameterInspector->getSignatureByReflectionClass($reflectionClass, $method);
     }
 
+    /**
+     * @param string $class
+     * @return array<string, mixed>[]|false|null
+     * @throws ReflectionException
+     */
     public function getCallableConstructorSignature(string $class): array|false|null
     {
         $reflectionClass = $this->getReflectionClass($class);

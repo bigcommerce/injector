@@ -114,7 +114,6 @@ class BindingClosureFactory
         return $this->proxyFactory->createProxy(
             $className,
             function (&$wrappedObject, $proxy, $method, $parameters, &$initializer) use (
-                $className,
                 $serviceFactory,
                 $app
             ) {
