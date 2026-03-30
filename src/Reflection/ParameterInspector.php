@@ -17,7 +17,7 @@ class ParameterInspector
 {
     /**
      * Fetch the method signature of a method when we have already created a \ReflectionClass
-     * @param \ReflectionClass $reflectionClass
+     * @param \ReflectionClass<object> $reflectionClass
      * @param string $methodName
      * @return array{'name': string, 'type'?: string, 'default'?: mixed, 'variadic'?: bool}[]
      * @throws \ReflectionException
@@ -58,7 +58,7 @@ class ParameterInspector
      *  - 'default' - If the parameter provides a default value, the default value.
      * @param string $className Fully qualified class name
      * @param string $methodName Name of the method we're inspecting
-     * @param \ReflectionClass $refClass Optional existing ReflectionClass for this class
+     * @param \ReflectionClass<object>|null $refClass Optional existing ReflectionClass for this class
      * @return array{'name': string, 'type'?: string, 'default'?: mixed, 'variadic'?: bool}[] The signature
      * of this methods parameters as an array.
      * @throws \ReflectionException

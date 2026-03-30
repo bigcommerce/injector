@@ -81,7 +81,7 @@ abstract class InjectorServiceProvider implements ServiceProviderInterface
     /**
      * Alias for Injector::create()
      * @param string $className
-     * @param array $parameters
+     * @param array<int|string, mixed> $parameters
      * @return object
      * @throws \Exception
      * @see InjectorInterface::create()

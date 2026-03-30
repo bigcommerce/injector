@@ -10,7 +10,7 @@ use ReflectionException;
 class CachingClassInspector implements ClassInspectorInterface
 {
     /**
-     * @var array<string, array{0: array|false|null}>
+     * @var array<string, array{0: array<string, mixed>[]|false|null}>
      */
     private array $constructorCache = [];
 
@@ -104,6 +104,10 @@ class CachingClassInspector implements ClassInspectorInterface
         return $value;
     }
 
+    /**
+     * @param string $class
+     * @return array<string, mixed>[]|false|null
+     */
     public function getCallableConstructorSignature(string $class): array|false|null
     {
         if (isset($this->constructorCache[$class])) {
