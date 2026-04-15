@@ -29,6 +29,7 @@ class CachingClassInspectorTest extends TestCase
         $serviceCache = $this->prophesize(ServiceCacheInterface::class);
         $serviceCache->set(Argument::cetera())->will(function ($arguments) use ($serviceCache) {
             $serviceCache->get($arguments[0])->willReturn($arguments[1]);
+            $serviceCache->has($arguments[0])->willReturn(true);
         });
         $this->serviceCache = $serviceCache;
         $this->classInspector = $this->prophesize(ClassInspector::class);
@@ -58,6 +59,7 @@ class CachingClassInspectorTest extends TestCase
     public function testWarmCacheUsesOptimizedPathForConstructor(): void
     {
         $signature = [['name' => 'dependency', 'type' => 'SomeClass']];
+        $this->serviceCache->has(Argument::cetera())->willReturn(false);
         $this->classInspector->getCallableConstructorSignature(DummyDependency::class)
             ->willReturn($signature);
 
@@ -68,9 +70,25 @@ class CachingClassInspectorTest extends TestCase
         $this->classInspector->getMethodSignature(Argument::cetera())->shouldNotHaveBeenCalled();
     }
 
+    public function testWarmCachePopulatesServiceCacheForConstructor(): void
+    {
+        $signature = [['name' => 'dependency', 'type' => 'SomeClass']];
+        $this->serviceCache->has(Argument::cetera())->willReturn(false);
+        $this->classInspector->getCallableConstructorSignature(DummyDependency::class)
+            ->willReturn($signature);
+
+        $this->subject->warmCache(DummyDependency::class, '__construct');
+
+        $this->serviceCache->set(
+            "Tests\Dummy\DummyDependency::__construct::callable_signature",
+            $signature
+        )->shouldHaveBeenCalled();
+    }
+
     public function testGetCallableConstructorSignatureCachesResult(): void
     {
         $signature = [['name' => 'dependency', 'type' => 'SomeClass']];
+        $this->serviceCache->has(Argument::cetera())->willReturn(false);
         $this->classInspector->getCallableConstructorSignature(DummyDependency::class)
             ->willReturn($signature)
             ->shouldBeCalledOnce();
@@ -82,8 +100,22 @@ class CachingClassInspectorTest extends TestCase
         $this->assertEquals($signature, $result2);
     }
 
+    public function testGetCallableConstructorSignatureUsesServiceCacheOnL1Miss(): void
+    {
+        $signature = [['name' => 'dependency', 'type' => 'SomeClass']];
+        $key = "Tests\Dummy\DummyDependency::__construct::callable_signature";
+        $this->serviceCache->has($key)->willReturn(true);
+        $this->serviceCache->get($key)->willReturn($signature);
+
+        $result = $this->subject->getCallableConstructorSignature(DummyDependency::class);
+
+        $this->assertEquals($signature, $result);
+        $this->classInspector->getCallableConstructorSignature(Argument::cetera())->shouldNotHaveBeenCalled();
+    }
+
     public function testGetCallableConstructorSignatureReturnsNullForNoConstructor(): void
     {
+        $this->serviceCache->has(Argument::cetera())->willReturn(false);
         $this->classInspector->getCallableConstructorSignature(DummyDependency::class)
             ->willReturn(null);
 
@@ -94,6 +126,7 @@ class CachingClassInspectorTest extends TestCase
 
     public function testGetCallableConstructorSignatureReturnsFalseForNonPublicConstructor(): void
     {
+        $this->serviceCache->has(Argument::cetera())->willReturn(false);
         $this->classInspector->getCallableConstructorSignature(DummyDependency::class)
             ->willReturn(false);
 

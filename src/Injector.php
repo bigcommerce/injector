@@ -198,7 +198,6 @@ class Injector implements InjectorInterface
      * @return array
      * @throws InjectorInvocationException
      * @throws MissingRequiredParameterException
-     * @throws InvalidArgumentException
      * @throws ReflectionException
      */
     private function buildParameterArray($methodSignature, $providedParameters)
