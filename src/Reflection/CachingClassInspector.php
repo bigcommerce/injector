@@ -109,8 +109,19 @@ class CachingClassInspector implements ClassInspectorInterface
         if (isset($this->constructorCache[$class])) {
             return $this->constructorCache[$class][0];
         }
+
+        $key = "$class::__construct::callable_signature";
+        if ($this->serviceCache->has($key)) {
+            $result = $this->serviceCache->get($key);
+            $this->constructorCache[$class] = [$result];
+            return $result;
+        }
+
         $result = $this->classInspector->getCallableConstructorSignature($class);
         $this->constructorCache[$class] = [$result];
+        if (is_array($result)) {
+            $this->serviceCache->set($key, $result);
+        }
         return $result;
     }
 
