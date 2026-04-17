@@ -43,6 +43,21 @@ class Injector implements InjectorInterface
      */
     private array $autoCreateCache = [];
 
+    /**
+     * Cached results of container->has() calls per type.
+     *
+     * The container is typically sealed at bootstrap, so whether a given FQCN
+     * is registered doesn't change during a request. Caching the boolean here
+     * eliminates a PSR-11 has() call on every subsequent injection of the same
+     * typed dependency.
+     *
+     * Stored as true|false so that false (type absent) is distinguishable from
+     * null (not yet looked up) via the null-coalescing operator.
+     *
+     * @var array<string, bool>
+     */
+    private array $containerHasCache = [];
+
     public function __construct(private readonly ContainerInterface $container, private readonly ClassInspectorInterface $classInspector)
     {
     }
@@ -79,9 +94,12 @@ class Injector implements InjectorInterface
         }
 
         try {
-            $parameters = $this->buildParameterArray($signature, $parameters);
+            // Fast path: skip the extra method call for the common autowiring case
+            if (empty($parameters)) {
+                return new $className(...$this->buildParameterArrayFromContainer($signature));
+            }
 
-            return new $className(...$parameters);
+            return new $className(...$this->buildParameterArray($signature, $parameters));
         } catch (MissingRequiredParameterException $e) {
             throw new InjectorInvocationException(
                 "Can't create $className " .
@@ -237,24 +255,29 @@ class Injector implements InjectorInterface
     private function buildParameterArrayFromContainer($methodSignature)
     {
         $parameters = [];
-        foreach ($methodSignature as $position => $parameterData) {
+        foreach ($methodSignature as $parameterData) {
             if (isset($parameterData['variadic'])) {
                 // variadic with no provided params = nothing to pipe
                 break;
             }
             $type = $parameterData['type'] ?? false;
             if ($type) {
-                if ($this->container->has($type)) {
-                    $parameters[$position] = $this->container->get($type);
+                $inContainer = $this->containerHasCache[$type] ?? null;
+                if ($inContainer === null) {
+                    $inContainer = $this->container->has($type);
+                    $this->containerHasCache[$type] = $inContainer;
+                }
+                if ($inContainer) {
+                    $parameters[] = $this->container->get($type);
                     continue;
                 }
                 if ($this->canAutoCreate($type)) {
-                    $parameters[$position] = $this->create($type);
+                    $parameters[] = $this->create($type);
                     continue;
                 }
             }
             if (array_key_exists('default', $parameterData)) {
-                $parameters[$position] = $parameterData['default'];
+                $parameters[] = $parameterData['default'];
                 continue;
             }
             $name = $parameterData['name'];
