@@ -43,8 +43,11 @@ class Injector implements InjectorInterface
      */
     private array $autoCreateCache = [];
 
+    private readonly bool $hasGetIfDefined;
+
     public function __construct(private readonly ContainerInterface $container, private readonly ClassInspectorInterface $classInspector)
     {
+        $this->hasGetIfDefined = method_exists($container, 'getIfDefined');
     }
 
     /**
@@ -237,15 +240,22 @@ class Injector implements InjectorInterface
     private function buildParameterArrayFromContainer($methodSignature)
     {
         $parameters = [];
+        $container = $this->container;
+        $useOptimized = $this->hasGetIfDefined;
         foreach ($methodSignature as $position => $parameterData) {
             if (isset($parameterData['variadic'])) {
-                // variadic with no provided params = nothing to pipe
                 break;
             }
             $type = $parameterData['type'] ?? false;
             if ($type) {
-                if ($this->container->has($type)) {
-                    $parameters[$position] = $this->container->get($type);
+                if ($useOptimized) {
+                    $value = null;
+                    if ($container->getIfDefined($type, $value)) {
+                        $parameters[$position] = $value;
+                        continue;
+                    }
+                } elseif ($container->has($type)) {
+                    $parameters[$position] = $container->get($type);
                     continue;
                 }
                 if ($this->canAutoCreate($type)) {
