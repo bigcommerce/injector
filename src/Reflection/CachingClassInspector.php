@@ -14,6 +14,15 @@ class CachingClassInspector implements ClassInspectorInterface
      */
     private array $constructorCache = [];
 
+    /**
+     * @var array<string, bool>
+     */
+    private array $classHasMethodCache = [];
+
+    /**
+     * @var array<string, bool>
+     */
+    private array $methodIsPublicCache = [];
     public function __construct(
         private readonly ClassInspector $classInspector,
         private readonly ServiceCacheInterface $serviceCache,
@@ -51,6 +60,11 @@ class CachingClassInspector implements ClassInspectorInterface
      */
     public function classHasMethod(string $class, string $method): bool
     {
+        $cacheKey = "$class::$method";
+        if (array_key_exists($cacheKey, $this->classHasMethodCache)) {
+            return $this->classHasMethodCache[$cacheKey];
+        }
+
         $key = "$class::{$method}::exists";
         if ($this->serviceCache->has($key)) {
             $value = $this->serviceCache->get($key);
@@ -59,6 +73,7 @@ class CachingClassInspector implements ClassInspectorInterface
             $this->serviceCache->set($key, $value);
         }
 
+        $this->classHasMethodCache[$cacheKey] = $value;
         return $value;
     }
 
@@ -72,6 +87,11 @@ class CachingClassInspector implements ClassInspectorInterface
      */
     public function methodIsPublic(string $class, string $method): bool
     {
+        $cacheKey = "$class::$method";
+        if (array_key_exists($cacheKey, $this->methodIsPublicCache)) {
+            return $this->methodIsPublicCache[$cacheKey];
+        }
+
         $key = "$class::{$method}::is_public";
         if ($this->serviceCache->has($key)) {
             $value = $this->serviceCache->get($key);
@@ -80,6 +100,7 @@ class CachingClassInspector implements ClassInspectorInterface
             $this->serviceCache->set($key, $value);
         }
 
+        $this->methodIsPublicCache[$cacheKey] = $value;
         return $value;
     }
 

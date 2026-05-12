@@ -145,6 +145,35 @@ class CachingClassInspectorTest extends TestCase
         $this->classInspector->classHasMethod(Argument::cetera())->shouldNotHaveBeenCalled();
     }
 
+    public function testClassHasMethodUsesL1CacheOnSecondCall(): void
+    {
+        $this->serviceCache->has(Argument::cetera())->willReturn(false);
+        $this->classInspector->classHasMethod(DummyDependency::class, 'isEnabled')
+            ->willReturn(true)
+            ->shouldBeCalledOnce();
+
+        $result1 = $this->subject->classHasMethod(DummyDependency::class, 'isEnabled');
+        $result2 = $this->subject->classHasMethod(DummyDependency::class, 'isEnabled');
+
+        $this->assertTrue($result1);
+        $this->assertTrue($result2);
+        $this->serviceCache->has(Argument::cetera())->shouldHaveBeenCalledOnce();
+    }
+
+    public function testClassHasMethodL1CacheReturnsFalseCorrectly(): void
+    {
+        $this->serviceCache->has(Argument::cetera())->willReturn(false);
+        $this->classInspector->classHasMethod(DummyDependency::class, 'nonExistent')
+            ->willReturn(false)
+            ->shouldBeCalledOnce();
+
+        $result1 = $this->subject->classHasMethod(DummyDependency::class, 'nonExistent');
+        $result2 = $this->subject->classHasMethod(DummyDependency::class, 'nonExistent');
+
+        $this->assertFalse($result1);
+        $this->assertFalse($result2);
+    }
+
     public function testClassHasMethodReturnsTrueForExistingMethodOnCacheMiss(): void
     {
         $this->serviceCache->has(Argument::cetera())->willReturn(false);
@@ -184,6 +213,21 @@ class CachingClassInspectorTest extends TestCase
         $this->subject->methodIsPublic(DummyDependency::class, 'isEnabled');
 
         $this->classInspector->methodIsPublic(Argument::cetera())->shouldNotHaveBeenCalled();
+    }
+
+    public function testMethodIsPublicUsesL1CacheOnSecondCall(): void
+    {
+        $this->serviceCache->has(Argument::cetera())->willReturn(false);
+        $this->classInspector->methodIsPublic(DummyDependency::class, 'isEnabled')
+            ->willReturn(true)
+            ->shouldBeCalledOnce();
+
+        $result1 = $this->subject->methodIsPublic(DummyDependency::class, 'isEnabled');
+        $result2 = $this->subject->methodIsPublic(DummyDependency::class, 'isEnabled');
+
+        $this->assertTrue($result1);
+        $this->assertTrue($result2);
+        $this->serviceCache->has(Argument::cetera())->shouldHaveBeenCalledOnce();
     }
 
     public function testMethodIsPublicReturnsTrueForExistingMethodOnCacheMiss(): void
