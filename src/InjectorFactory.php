@@ -15,10 +15,14 @@ use Psr\Container\ContainerInterface;
 
 class InjectorFactory
 {
+    /**
+     * @param array<string, array{0: array|false|null}> $precomputedConstructorSignatures
+     */
     public static function create(
         ContainerInterface $container,
         int $reflectionClassCacheSize = 50,
         ?ServiceCacheInterface $serviceCache = null,
+        array $precomputedConstructorSignatures = [],
     ): InjectorInterface {
         $classInspector = new ClassInspector(
             new ReflectionClassCache($reflectionClassCacheSize),
@@ -29,6 +33,7 @@ class InjectorFactory
         $cachingClassInspector = new CachingClassInspector(
             $classInspector,
             $serviceCache ?? new ArrayServiceCache(),
+            $precomputedConstructorSignatures,
         );
 
         return new Injector($container, $cachingClassInspector);

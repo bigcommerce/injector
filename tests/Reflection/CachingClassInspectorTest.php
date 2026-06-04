@@ -257,4 +257,82 @@ class CachingClassInspectorTest extends TestCase
         $this->serviceCache->set("Tests\Dummy\DummyDependency::isEnabled::signature", [])
             ->shouldHaveBeenCalled();
     }
+
+    public function testPrecomputedSignatureSkipsServiceCacheAndClassInspector(): void
+    {
+        $signature = [['name' => 'dependency', 'type' => 'SomeClass']];
+        $subject = new CachingClassInspector(
+            $this->classInspector->reveal(),
+            $this->serviceCache->reveal(),
+            [DummyDependency::class => [$signature]],
+        );
+
+        $result = $subject->getCallableConstructorSignature(DummyDependency::class);
+
+        $this->assertEquals($signature, $result);
+        $this->serviceCache->has(Argument::cetera())->shouldNotHaveBeenCalled();
+        $this->classInspector->getCallableConstructorSignature(Argument::cetera())->shouldNotHaveBeenCalled();
+    }
+
+    public function testPrecomputedNullSignatureSkipsReflection(): void
+    {
+        $subject = new CachingClassInspector(
+            $this->classInspector->reveal(),
+            $this->serviceCache->reveal(),
+            [DummyDependency::class => [null]],
+        );
+
+        $result = $subject->getCallableConstructorSignature(DummyDependency::class);
+
+        $this->assertNull($result);
+        $this->classInspector->getCallableConstructorSignature(Argument::cetera())->shouldNotHaveBeenCalled();
+    }
+
+    public function testPrecomputedFalseSignatureSkipsReflection(): void
+    {
+        $subject = new CachingClassInspector(
+            $this->classInspector->reveal(),
+            $this->serviceCache->reveal(),
+            [DummyDependency::class => [false]],
+        );
+
+        $result = $subject->getCallableConstructorSignature(DummyDependency::class);
+
+        $this->assertFalse($result);
+        $this->classInspector->getCallableConstructorSignature(Argument::cetera())->shouldNotHaveBeenCalled();
+    }
+
+    public function testEmptyPrecomputedArrayPreservesExistingBehavior(): void
+    {
+        $signature = [['name' => 'dependency', 'type' => 'SomeClass']];
+        $subject = new CachingClassInspector(
+            $this->classInspector->reveal(),
+            $this->serviceCache->reveal(),
+            [],
+        );
+
+        $this->serviceCache->has(Argument::cetera())->willReturn(false);
+        $this->classInspector->getCallableConstructorSignature(DummyDependency::class)
+            ->willReturn($signature);
+
+        $result = $subject->getCallableConstructorSignature(DummyDependency::class);
+
+        $this->assertEquals($signature, $result);
+        $this->classInspector->getCallableConstructorSignature(DummyDependency::class)
+            ->shouldHaveBeenCalled();
+    }
+
+    public function testGetConstructorCacheReturnsWarmData(): void
+    {
+        $signature = [['name' => 'dependency', 'type' => 'SomeClass']];
+        $this->serviceCache->has(Argument::cetera())->willReturn(false);
+        $this->classInspector->getCallableConstructorSignature(DummyDependency::class)
+            ->willReturn($signature);
+
+        $this->subject->getCallableConstructorSignature(DummyDependency::class);
+
+        $cache = $this->subject->getConstructorCache();
+        $this->assertArrayHasKey(DummyDependency::class, $cache);
+        $this->assertEquals([$signature], $cache[DummyDependency::class]);
+    }
 }

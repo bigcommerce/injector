@@ -12,12 +12,25 @@ class CachingClassInspector implements ClassInspectorInterface
     /**
      * @var array<string, array{0: array|false|null}>
      */
-    private array $constructorCache = [];
+    private array $constructorCache;
 
+    /**
+     * @param array<string, array{0: array|false|null}> $precomputedConstructorSignatures
+     */
     public function __construct(
         private readonly ClassInspector $classInspector,
         private readonly ServiceCacheInterface $serviceCache,
+        array $precomputedConstructorSignatures = [],
     ) {
+        $this->constructorCache = $precomputedConstructorSignatures;
+    }
+
+    /**
+     * @return array<string, array{0: array|false|null}>
+     */
+    public function getConstructorCache(): array
+    {
+        return $this->constructorCache;
     }
 
     /**
