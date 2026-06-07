@@ -43,8 +43,16 @@ class Injector implements InjectorInterface
      */
     private array $autoCreateCache = [];
 
+    /**
+     * The container as a FindableContainerInterface when it supports find(), else NULL. Lets us resolve a dependency in
+     * a single lookup instead of ->has() + ->get(). Resolved once in the constructor as it can't change for a given
+     * container
+     */
+    private readonly ?FindableContainerInterface $findableContainer;
+
     public function __construct(private readonly ContainerInterface $container, private readonly ClassInspectorInterface $classInspector)
     {
+        $this->findableContainer = $container instanceof FindableContainerInterface ? $container : null;
     }
 
     /**
@@ -244,7 +252,12 @@ class Injector implements InjectorInterface
             }
             $type = $parameterData['type'] ?? false;
             if ($type) {
-                if ($this->container->has($type)) {
+                $service = $this->findableContainer?->find($type);
+                if ($service !== null) {
+                    $parameters[$position] = $service;
+                    continue;
+                }
+                if ($this->findableContainer === null && $this->container->has($type)) {
                     $parameters[$position] = $this->container->get($type);
                     continue;
                 }
@@ -304,7 +317,12 @@ class Injector implements InjectorInterface
                 unset($providedParameters[$type]);
                 return $result;
             }
-            if ($this->container->has($type)) {
+            $service = $this->findableContainer?->find($type);
+            if ($service !== null) {
+                // Found the dependency by type in the container
+                return $service;
+            }
+            if ($this->findableContainer === null && $this->container->has($type)) {
                 // Found the dependency by type in the container
                 return $this->container->get($type);
             }

@@ -1,6 +1,7 @@
 <?php
 namespace Tests;
 
+use Bigcommerce\Injector\Adapter\ArrayContainerAdapter;
 use Bigcommerce\Injector\Exception\InjectorInvocationException;
 use Bigcommerce\Injector\Injector;
 use Bigcommerce\Injector\Reflection\ClassInspector;
@@ -243,6 +244,42 @@ class InjectorTest extends TestCase
         $this->assertInstanceOf(DummyDependency::class, $instance->getDummyDependency());
         $this->assertEquals("bob", $instance->getName());
         $this->assertEquals(25, $instance->getAge());
+    }
+
+    public function testResolvesDependencyFromFindableContainer()
+    {
+        $dep = new DummySubDependency();
+        $this->mockDummyDependencySignature();
+
+        $injector = new Injector(
+            new ArrayContainerAdapter([DummySubDependency::class => $dep]),
+            $this->inspector->reveal()
+        );
+
+        $instance = $injector->create(DummyDependency::class);
+        $this->assertSame($dep, $instance->getDependency());
+    }
+
+    public function testFindableContainerAutoCreatesWhenDependencyAbsent()
+    {
+        $this->mockDummyDependencySignature();
+        $this->mockDummySubDependencySignature();
+
+        $injector = new Injector(new ArrayContainerAdapter([]), $this->inspector->reveal());
+        $injector->addAutoCreate(".*DummySubDependency");
+
+        $instance = $injector->create(DummyDependency::class);
+        $this->assertInstanceOf(DummySubDependency::class, $instance->getDependency());
+    }
+
+    public function testFindableContainerThrowsForMissingRequiredDependency()
+    {
+        $this->mockDummyDependencySignature();
+
+        $injector = new Injector(new ArrayContainerAdapter([]), $this->inspector->reveal());
+
+        $this->expectException(InjectorInvocationException::class);
+        $injector->create(DummyDependency::class);
     }
 
     /**
