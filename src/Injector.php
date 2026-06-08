@@ -252,12 +252,14 @@ class Injector implements InjectorInterface
             }
             $type = $parameterData['type'] ?? false;
             if ($type) {
-                $service = $this->findableContainer?->find($type);
-                if ($service !== null) {
-                    $parameters[$position] = $service;
-                    continue;
-                }
-                if ($this->findableContainer === null && $this->container->has($type)) {
+                if ($this->findableContainer !== null) {
+                    $service = $this->findableContainer->find($type);
+                    if ($service !== FindResult::NotFound) {
+                        // a present entry may itself be NULL - that is a valid resolved value, not an absence
+                        $parameters[$position] = $service;
+                        continue;
+                    }
+                } elseif ($this->container->has($type)) {
                     $parameters[$position] = $this->container->get($type);
                     continue;
                 }
@@ -317,12 +319,13 @@ class Injector implements InjectorInterface
                 unset($providedParameters[$type]);
                 return $result;
             }
-            $service = $this->findableContainer?->find($type);
-            if ($service !== null) {
-                // Found the dependency by type in the container
-                return $service;
-            }
-            if ($this->findableContainer === null && $this->container->has($type)) {
+            if ($this->findableContainer !== null) {
+                $service = $this->findableContainer->find($type);
+                if ($service !== FindResult::NotFound) {
+                    // Found the dependency by type in the container - a present entry may itself be NULL
+                    return $service;
+                }
+            } elseif ($this->container->has($type)) {
                 // Found the dependency by type in the container
                 return $this->container->get($type);
             }

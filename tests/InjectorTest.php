@@ -13,6 +13,7 @@ use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Container\ContainerInterface;
 use Tests\Dummy\DummyDependency;
 use Tests\Dummy\DummyNoConstructor;
+use Tests\Dummy\DummyNullableDependency;
 use Tests\Dummy\DummyPrivateConstructor;
 use Tests\Dummy\DummySimpleConstructor;
 use Tests\Dummy\DummyString;
@@ -280,6 +281,82 @@ class InjectorTest extends TestCase
 
         $this->expectException(InjectorInvocationException::class);
         $injector->create(DummyDependency::class);
+    }
+
+    /**
+     * Regression: a registered service can legitimately resolve to NULL (e.g. an optional setting). find()
+     * must hand that NULL to a nullable parameter rather than treating the service as absent and throwing.
+     *
+     * This exercises the no-args fast path (buildParameterArrayFromContainer).
+     */
+    public function testFindableContainerResolvesPresentDependencyThatIsNull()
+    {
+        $this->inspector->getCallableConstructorSignature(DummyNullableDependency::class)
+            ->willReturn([
+                ["name" => "dependency", "type" => DummySubDependency::class],
+            ]);
+
+        $injector = new Injector(
+            new ArrayContainerAdapter($this->containerResolvingTo(null)),
+            $this->inspector->reveal()
+        );
+
+        $instance = $injector->create(DummyNullableDependency::class);
+        $this->assertNull($instance->getDependency());
+    }
+
+    /**
+     * As above, but via the provided-parameters path (resolveParameter), covering the second find() call site:
+     * one parameter is passed explicitly, the nullable one is resolved from the container as NULL.
+     */
+    public function testFindableContainerResolvesPresentNullDependencyWithProvidedParameters()
+    {
+        $this->inspector->getCallableConstructorSignature(DummyNullableDependency::class)
+            ->willReturn([
+                ["name" => "dependency", "type" => DummySubDependency::class],
+                ["name" => "name"],
+            ]);
+
+        $injector = new Injector(
+            new ArrayContainerAdapter($this->containerResolvingTo(null)),
+            $this->inspector->reveal()
+        );
+
+        $instance = $injector->create(DummyNullableDependency::class, ["name" => "bob"]);
+        $this->assertNull($instance->getDependency());
+        $this->assertSame("bob", $instance->getName());
+    }
+
+    /**
+     * A Pimple/JITContainer-like ArrayAccess where offsetExists is true for a registered service even though
+     * its factory resolves to the given value (here NULL). Reproduces the "present but resolves to null" case
+     * that find() must keep distinct from absence.
+     */
+    private function containerResolvingTo(mixed $value): \ArrayAccess
+    {
+        return new class ($value) implements \ArrayAccess {
+            public function __construct(private mixed $value)
+            {
+            }
+
+            public function offsetExists($offset): bool
+            {
+                return true;
+            }
+
+            public function offsetGet($offset): mixed
+            {
+                return $this->value;
+            }
+
+            public function offsetSet($offset, $value): void
+            {
+            }
+
+            public function offsetUnset($offset): void
+            {
+            }
+        };
     }
 
     /**
