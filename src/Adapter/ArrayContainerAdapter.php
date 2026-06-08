@@ -3,6 +3,7 @@ namespace Bigcommerce\Injector\Adapter;
 
 use Bigcommerce\Injector\Adapter\Exception\ServiceNotFoundException;
 use Bigcommerce\Injector\FindableContainerInterface;
+use Bigcommerce\Injector\FindResult;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
@@ -58,15 +59,16 @@ class ArrayContainerAdapter implements FindableContainerInterface
     }
 
     /**
-     * Return the entry for the given id, or NULL if it isn't in the container. A single lookup, so callers can skip the
-     * separate ->has() call. Matches ->has()/->get(): a stored null is treated as absent (isset semantics), so a
-     * present entry is never NULL
+     * Return the entry for the given id, or the FindResult::NotFound sentinel if it isn't in the container. A single
+     * lookup, so callers can skip the separate ->has() call. Presence is decided with isset() to match ->has()/->get();
+     * when present the entry is returned as-is, including NULL (e.g. a Pimple service whose factory resolves to NULL),
+     * which the sentinel keeps distinct from absence.
      *
      * @param string $id
-     * @return mixed
+     * @return mixed The entry (which may be NULL), or FindResult::NotFound when absent
      */
     public function find(string $id): mixed
     {
-        return $this->arrayContainer[$id] ?? null;
+        return isset($this->arrayContainer[$id]) ? $this->arrayContainer[$id] : FindResult::NotFound;
     }
 }

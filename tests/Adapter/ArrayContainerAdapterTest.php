@@ -1,8 +1,10 @@
 <?php
 namespace tests\Adapter;
 
+use ArrayAccess;
 use Bigcommerce\Injector\Adapter\ArrayContainerAdapter;
 use Bigcommerce\Injector\Adapter\Exception\ServiceNotFoundException;
+use Bigcommerce\Injector\FindResult;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -43,5 +45,48 @@ class ArrayContainerAdapterTest extends TestCase
     {
         $adapter = new ArrayContainerAdapter(["found" => 123]);
         $this->assertTrue($adapter->has("found"));
+    }
+
+    public function testFindReturnsEntry()
+    {
+        $adapter = new ArrayContainerAdapter(["found" => 123]);
+        $this->assertSame(123, $adapter->find("found"));
+    }
+
+    public function testFindReturnsNotFoundSentinelWhenAbsent()
+    {
+        $adapter = new ArrayContainerAdapter([]);
+        $this->assertSame(FindResult::NotFound, $adapter->find("Missing"));
+    }
+
+    public function testFindReturnsNullForPresentEntryThatResolvesToNull()
+    {
+        // Mimics Pimple/JITContainer: offsetExists is true for a registered service even when its
+        // factory resolves to null. find() must return that null as a real value, not the NotFound
+        // sentinel, so the Injector can pass it to a nullable dependency.
+        $container = new class implements ArrayAccess {
+            public function offsetExists($offset): bool
+            {
+                return $offset === 'present-but-null';
+            }
+
+            public function offsetGet($offset): mixed
+            {
+                return null;
+            }
+
+            public function offsetSet($offset, $value): void
+            {
+            }
+
+            public function offsetUnset($offset): void
+            {
+            }
+        };
+
+        $adapter = new ArrayContainerAdapter($container);
+
+        $this->assertNull($adapter->find("present-but-null"));
+        $this->assertSame(FindResult::NotFound, $adapter->find("absent"));
     }
 }
