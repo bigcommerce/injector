@@ -2,15 +2,15 @@
 namespace Bigcommerce\Injector\Adapter;
 
 use Bigcommerce\Injector\Adapter\Exception\ServiceNotFoundException;
-use Bigcommerce\Injector\FindableContainerInterface;
 use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 /**
  * Adapt a simple array container (i.e Pimple) to ContainerInterop Interface
  * @package Bigcommerce\Injector\Adapter
  */
-class ArrayContainerAdapter implements FindableContainerInterface
+class ArrayContainerAdapter implements ContainerInterface
 {
     /**
      * @var array|\ArrayAccess
@@ -55,18 +55,5 @@ class ArrayContainerAdapter implements FindableContainerInterface
     public function has($id): bool
     {
         return isset($this->arrayContainer[$id]);
-    }
-
-    /**
-     * Return the entry for the given id, or NULL if it isn't in the container. A single lookup, so callers can skip the
-     * separate ->has() call. Matches ->has()/->get(): a stored null is treated as absent (isset semantics), so a
-     * present entry is never NULL
-     *
-     * @param string $id
-     * @return mixed
-     */
-    public function find(string $id): mixed
-    {
-        return $this->arrayContainer[$id] ?? null;
     }
 }
