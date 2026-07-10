@@ -17,6 +17,8 @@ class ArrayContainerAdapter implements ContainerInterface
      */
     private $arrayContainer;
 
+    private bool $useOptimizedLookup;
+
     /**
      * ArrayContainerAdapter constructor.
      * @param array|\ArrayAccess $arrayContainer
@@ -24,6 +26,7 @@ class ArrayContainerAdapter implements ContainerInterface
     public function __construct($arrayContainer)
     {
         $this->arrayContainer = $arrayContainer;
+        $this->useOptimizedLookup = is_object($arrayContainer) && method_exists($arrayContainer, 'getIfDefined');
     }
 
     /**
@@ -38,10 +41,39 @@ class ArrayContainerAdapter implements ContainerInterface
      */
     public function get($id)
     {
+        if ($this->useOptimizedLookup) {
+            try {
+                return $this->arrayContainer[$id];
+            } catch (\InvalidArgumentException $e) {
+                throw new ServiceNotFoundException("Service not found in container ($id).", 0, $e);
+            }
+        }
         if (!isset($this->arrayContainer[$id])) {
             throw new ServiceNotFoundException("Service not found in container ($id).");
         }
         return $this->arrayContainer[$id];
+    }
+
+    /**
+     * Check if the entry exists and retrieve it in a single operation.
+     * Avoids the double container lookup of separate has() + get() calls.
+     * When the underlying container supports getIfDefined (e.g. JITContainer),
+     * this reduces provider loading from 3 calls to 1.
+     *
+     * @param string $id Identifier of the entry to look for.
+     * @param mixed $result Will be set to the entry value if found.
+     * @return bool True if the entry was found.
+     */
+    public function getIfDefined(string $id, mixed &$result): bool
+    {
+        if ($this->useOptimizedLookup) {
+            return $this->arrayContainer->getIfDefined($id, $result);
+        }
+        if (!isset($this->arrayContainer[$id])) {
+            return false;
+        }
+        $result = $this->arrayContainer[$id];
+        return true;
     }
 
     /**

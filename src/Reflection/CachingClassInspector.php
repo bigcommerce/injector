@@ -14,6 +14,11 @@ class CachingClassInspector implements ClassInspectorInterface
      */
     private array $constructorCache = [];
 
+    /**
+     * @var array<string, array>
+     */
+    private array $methodSignatureCache = [];
+
     public function __construct(
         private readonly ClassInspector $classInspector,
         private readonly ServiceCacheInterface $serviceCache,
@@ -93,6 +98,11 @@ class CachingClassInspector implements ClassInspectorInterface
      */
     public function getMethodSignature(string $class, string $method): array
     {
+        $cacheKey = "$class::$method";
+        if (isset($this->methodSignatureCache[$cacheKey])) {
+            return $this->methodSignatureCache[$cacheKey];
+        }
+
         $key = "$class::{$method}::signature";
         if ($this->serviceCache->has($key)) {
             $value = $this->serviceCache->get($key);
@@ -101,6 +111,7 @@ class CachingClassInspector implements ClassInspectorInterface
             $this->serviceCache->set($key, $value);
         }
 
+        $this->methodSignatureCache[$cacheKey] = $value;
         return $value;
     }
 
