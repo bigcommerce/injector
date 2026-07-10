@@ -246,6 +246,51 @@ class InjectorTest extends TestCase
     }
 
     /**
+     * Repeated create() calls must call container->get() each time, not reuse
+     * a cached dependency. This matters for factory/transient services.
+     */
+    public function testCreateCallsContainerGetOnEachInvocation()
+    {
+        $dep1 = new DummySubDependency();
+        $dep2 = new DummySubDependency();
+
+        $this->mockDummyDependencySignature();
+
+        $this->container->has(DummySubDependency::class)->willReturn(true);
+        $this->container->get(DummySubDependency::class)->willReturn($dep1, $dep2);
+
+        $injector = new Injector($this->container->reveal(), $this->inspector->reveal());
+
+        $first = $injector->create(DummyDependency::class);
+        $second = $injector->create(DummyDependency::class);
+
+        $this->assertSame($dep1, $first->getDependency());
+        $this->assertSame($dep2, $second->getDependency());
+    }
+
+    /**
+     * Repeated create() with auto-created dependencies must produce fresh
+     * instances of the auto-created class each time.
+     */
+    public function testCreateWithAutoCreateGetsFreshInstanceEachTime()
+    {
+        $this->mockDummyDependencySignature();
+        $this->mockDummySubDependencySignature();
+
+        $this->container->has(DummySubDependency::class)->willReturn(false);
+
+        $injector = new Injector($this->container->reveal(), $this->inspector->reveal());
+        $injector->addAutoCreate(".*DummySubDependency");
+
+        $first = $injector->create(DummyDependency::class);
+        $second = $injector->create(DummyDependency::class);
+
+        $this->assertInstanceOf(DummySubDependency::class, $first->getDependency());
+        $this->assertInstanceOf(DummySubDependency::class, $second->getDependency());
+        $this->assertNotSame($first->getDependency(), $second->getDependency());
+    }
+
+    /**
      * Injector fails to create a sub-dependency. Should provided a wrapped stack exception message guiding
      * developers where to find the issue.
      */

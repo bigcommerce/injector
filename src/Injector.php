@@ -43,6 +43,13 @@ class Injector implements InjectorInterface
      */
     private array $autoCreateCache = [];
 
+    /**
+     * Cached results of container->has() calls, keyed by type
+     *
+     * @var array<string, bool>
+     */
+    private array $containerHasCache = [];
+
     public function __construct(private readonly ContainerInterface $container, private readonly ClassInspectorInterface $classInspector)
     {
     }
@@ -191,6 +198,18 @@ class Injector implements InjectorInterface
     }
 
     /**
+     * Whether the container has the given type, memoised so repeated resolutions of the same
+     * dependency across a request don't re-query the container.
+     *
+     * @param string $type
+     * @return bool
+     */
+    private function containerHas(string $type): bool
+    {
+        return $this->containerHasCache[$type] ??= $this->container->has($type);
+    }
+
+    /**
      * Construct the parameter array to be passed to a method call based on its parameter signature
      *
      * @param array $methodSignature
@@ -244,7 +263,7 @@ class Injector implements InjectorInterface
             }
             $type = $parameterData['type'] ?? false;
             if ($type) {
-                if ($this->container->has($type)) {
+                if ($this->containerHas($type)) {
                     $parameters[$position] = $this->container->get($type);
                     continue;
                 }
@@ -304,7 +323,7 @@ class Injector implements InjectorInterface
                 unset($providedParameters[$type]);
                 return $result;
             }
-            if ($this->container->has($type)) {
+            if ($this->containerHas($type)) {
                 // Found the dependency by type in the container
                 return $this->container->get($type);
             }
