@@ -1,17 +1,21 @@
 <?php
 namespace Tests;
 
+use Bigcommerce\Injector\Adapter\ArrayContainerAdapter;
 use Bigcommerce\Injector\Exception\InjectorInvocationException;
+use Bigcommerce\Injector\FindableContainerInterface;
 use Bigcommerce\Injector\Injector;
 use Bigcommerce\Injector\Reflection\ClassInspector;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use Pimple\Container as PimpleContainer;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Container\ContainerInterface;
 use Tests\Dummy\DummyDependency;
 use Tests\Dummy\DummyNoConstructor;
+use Tests\Dummy\DummyNullableDependency;
 use Tests\Dummy\DummyPrivateConstructor;
 use Tests\Dummy\DummySimpleConstructor;
 use Tests\Dummy\DummyString;
@@ -401,5 +405,150 @@ class InjectorTest extends TestCase
             $className,
             $methodName
         )->willReturn($returns);
+    }
+
+    private function mockDummyNullableDependencySignature()
+    {
+        $this->inspector->getCallableConstructorSignature(DummyNullableDependency::class)
+            ->willReturn([
+                ["name" => "dependency", "type" => DummySubDependency::class],
+            ]);
+    }
+
+    /**
+     * The $useFindableContainer constructor flag defaults to false, so a container that implements
+     * FindableContainerInterface must still be resolved via has()/get() unless the flag is explicitly enabled -
+     * existing callers of Injector are unaffected until they opt in.
+     */
+    public function testFindableContainerIsNotUsedUnlessExplicitlyEnabled()
+    {
+        $dependency = new DummySubDependency();
+        $this->mockDummyDependencySignature();
+
+        $findable = $this->prophesize(FindableContainerInterface::class);
+        $findable->has(DummySubDependency::class)->willReturn(true);
+        $findable->get(DummySubDependency::class)->willReturn($dependency);
+        $findable->find(Argument::any())->shouldNotBeCalled();
+
+        $injector = new Injector($findable->reveal(), $this->inspector->reveal());
+        $instance = $injector->create(DummyDependency::class);
+
+        $this->assertSame($dependency, $instance->getDependency());
+    }
+
+    /**
+     * With the flag enabled, a non-NULL resolution should use find() alone - has()/get() must not be called.
+     */
+    public function testFindableContainerFastPathResolvesNonNullValueWithoutSecondLookup()
+    {
+        $dependency = new DummySubDependency();
+        $this->mockDummyDependencySignature();
+
+        $findable = $this->prophesize(FindableContainerInterface::class);
+        $findable->find(DummySubDependency::class)->willReturn($dependency);
+        $findable->has(Argument::any())->shouldNotBeCalled();
+        $findable->get(Argument::any())->shouldNotBeCalled();
+
+        $injector = new Injector($findable->reveal(), $this->inspector->reveal(), true);
+        $instance = $injector->create(DummyDependency::class);
+
+        $this->assertSame($dependency, $instance->getDependency());
+    }
+
+    /**
+     * The regression this whole flag exists for: find() returning NULL is ambiguous between "not registered" and
+     * "registered, value is NULL". A dependency that is genuinely bound to NULL must resolve to NULL, not be
+     * treated as absent (which previously caused MissingRequiredParameterException in production for any
+     * nullable dependency whose container binding legitimately resolved to NULL).
+     */
+    public function testFindableContainerFastPathDisambiguatesADependencyRegisteredAsNull()
+    {
+        $this->mockDummyNullableDependencySignature();
+
+        $findable = $this->prophesize(FindableContainerInterface::class);
+        $findable->find(DummySubDependency::class)->willReturn(null);
+        $findable->has(DummySubDependency::class)->willReturn(true);
+        $findable->get(Argument::any())->shouldNotBeCalled();
+
+        $injector = new Injector($findable->reveal(), $this->inspector->reveal(), true);
+        $instance = $injector->create(DummyNullableDependency::class);
+
+        $this->assertNull($instance->getDependency());
+    }
+
+    /**
+     * The other half of the disambiguation: find() returning NULL because the dependency is genuinely absent
+     * (has() also false) must still fall through to auto-create / default / MissingRequiredParameterException,
+     * exactly as it would via has()/get().
+     */
+    public function testFindableContainerFastPathTreatsTrulyAbsentDependencyAsNotFound()
+    {
+        $this->mockDummyDependencySignature();
+        $this->mockDummySubDependencySignature();
+
+        $findable = $this->prophesize(FindableContainerInterface::class);
+        $findable->find(DummySubDependency::class)->willReturn(null);
+        $findable->has(DummySubDependency::class)->willReturn(false);
+
+        $injector = new Injector($findable->reveal(), $this->inspector->reveal(), true);
+        $injector->addAutoCreate(".*?DummySubDependency");
+        $instance = $injector->create(DummyDependency::class);
+
+        $this->assertInstanceOf(DummySubDependency::class, $instance->getDependency());
+    }
+
+    /**
+     * End-to-end reproduction of the real incident, using an actual Pimple container (not a mock) wrapped in
+     * ArrayContainerAdapter, matching exactly how the app wires the container into the Injector. A service bound
+     * to NULL must resolve as NULL through the fast path, not throw.
+     */
+    public function testFindableContainerFastPathViaRealPimpleContainerHandlesADependencyBoundToNull()
+    {
+        $pimple = new PimpleContainer();
+        $pimple[DummySubDependency::class] = null;
+
+        $this->mockDummyNullableDependencySignature();
+
+        $injector = new Injector(new ArrayContainerAdapter($pimple), $this->inspector->reveal(), true);
+        $instance = $injector->create(DummyNullableDependency::class);
+
+        $this->assertNull($instance->getDependency());
+    }
+
+    public function testResolvesDependencyFromFindableContainer()
+    {
+        $dep = new DummySubDependency();
+        $this->mockDummyDependencySignature();
+
+        $injector = new Injector(
+            new ArrayContainerAdapter(new PimpleContainer([DummySubDependency::class => $dep])),
+            $this->inspector->reveal(),
+            true
+        );
+
+        $instance = $injector->create(DummyDependency::class);
+        $this->assertSame($dep, $instance->getDependency());
+    }
+
+    public function testFindableContainerAutoCreatesWhenDependencyAbsent()
+    {
+        $this->mockDummyDependencySignature();
+        $this->mockDummySubDependencySignature();
+
+        $injector = new Injector(new ArrayContainerAdapter(new PimpleContainer()), $this->inspector->reveal(), true);
+        $injector->addAutoCreate(".*DummySubDependency");
+
+        $instance = $injector->create(DummyDependency::class);
+        $this->assertInstanceOf(DummySubDependency::class, $instance->getDependency());
+    }
+
+    public function testFindableContainerThrowsForMissingRequiredDependency()
+    {
+        $this->mockDummyDependencySignature();
+
+        $injector = new Injector(new ArrayContainerAdapter(new PimpleContainer()), $this->inspector->reveal(), true);
+
+        $this->expectException(InjectorInvocationException::class);
+        $injector->create(DummyDependency::class);
     }
 }

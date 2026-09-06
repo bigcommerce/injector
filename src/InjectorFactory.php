@@ -19,6 +19,7 @@ class InjectorFactory
         ContainerInterface $container,
         int $reflectionClassCacheSize = 50,
         ?ServiceCacheInterface $serviceCache = null,
+        bool $useFindableContainer = false,
     ): InjectorInterface {
         $classInspector = new ClassInspector(
             new ReflectionClassCache($reflectionClassCacheSize),
@@ -31,6 +32,6 @@ class InjectorFactory
             $serviceCache ?? new ArrayServiceCache(),
         );
 
-        return new Injector($container, $cachingClassInspector);
+        return new Injector($container, $cachingClassInspector, $useFindableContainer);
     }
 }
