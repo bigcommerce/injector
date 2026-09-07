@@ -43,8 +43,30 @@ class Injector implements InjectorInterface
      */
     private array $autoCreateCache = [];
 
-    public function __construct(private readonly ContainerInterface $container, private readonly ClassInspectorInterface $classInspector)
-    {
+    /**
+     * $container as a FindableContainerInterface when the single-lookup fast path is enabled and the container
+     * supports it, else NULL. Resolved once here since neither can change for a given Injector instance.
+     */
+    private readonly ?FindableContainerInterface $findableContainer;
+
+    /**
+     * @param ContainerInterface $container
+     * @param ClassInspectorInterface $classInspector
+     * @param bool $useFindableContainer Opt-in fast path: resolve container dependencies with a single find() call
+     * instead of has()+get(), when $container implements FindableContainerInterface. Defaults to false so existing
+     * callers are unaffected until they explicitly choose to enable it - e.g. behind an experiment in the
+     * consuming application. See FindableContainerInterface for why find() alone can't distinguish "absent" from
+     * "present and null"; this class falls back to a has() check to disambiguate whenever find() returns NULL, so
+     * enabling this only costs a second lookup for that rare case, not for every resolution.
+     */
+    public function __construct(
+        private readonly ContainerInterface $container,
+        private readonly ClassInspectorInterface $classInspector,
+        bool $useFindableContainer = false,
+    ) {
+        $this->findableContainer = ($useFindableContainer && $container instanceof FindableContainerInterface)
+            ? $container
+            : null;
     }
 
     /**
@@ -225,6 +247,32 @@ class Injector implements InjectorInterface
     }
 
     /**
+     * Resolve a dependency by type from the container, distinguishing "not found" from "found, value is NULL".
+     * Uses a single find() lookup when the fast path is enabled and the container supports it, falling back to a
+     * has() check only when that returns NULL (ambiguous between absent and a genuine NULL value) - the common
+     * case, a non-NULL resolution, always costs a single lookup either way.
+     *
+     * @param string $type
+     * @return array{0: bool, 1: mixed} [$found, $value] - $value is only meaningful when $found is true
+     */
+    private function resolveTypeFromContainer(string $type): array
+    {
+        if ($this->findableContainer !== null) {
+            $value = $this->findableContainer->find($type);
+            if ($value !== null) {
+                return [true, $value];
+            }
+            return $this->findableContainer->has($type) ? [true, null] : [false, null];
+        }
+
+        if ($this->container->has($type)) {
+            return [true, $this->container->get($type)];
+        }
+
+        return [false, null];
+    }
+
+    /**
      * Fast path for the common case: resolve all parameters from the container, auto-create, or defaults
      * Skips the 3 array_key_exists lookups per parameter that resolveParameter does against $providedParameters
      *
@@ -244,8 +292,9 @@ class Injector implements InjectorInterface
             }
             $type = $parameterData['type'] ?? false;
             if ($type) {
-                if ($this->container->has($type)) {
-                    $parameters[$position] = $this->container->get($type);
+                [$found, $value] = $this->resolveTypeFromContainer($type);
+                if ($found) {
+                    $parameters[$position] = $value;
                     continue;
                 }
                 if ($this->canAutoCreate($type)) {
@@ -304,9 +353,10 @@ class Injector implements InjectorInterface
                 unset($providedParameters[$type]);
                 return $result;
             }
-            if ($this->container->has($type)) {
+            [$found, $value] = $this->resolveTypeFromContainer($type);
+            if ($found) {
                 // Found the dependency by type in the container
-                return $this->container->get($type);
+                return $value;
             }
             if ($this->canAutoCreate($type)) {
                 // Auto create white list - recursion
