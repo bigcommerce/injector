@@ -468,12 +468,12 @@ class InjectorTest extends TestCase
         $findable = $this->prophesize(FindableContainerInterface::class);
         $findable->find(DummySubDependency::class)->willReturn(null);
         $findable->has(DummySubDependency::class)->willReturn(true);
-        $findable->get(Argument::any())->shouldNotBeCalled();
 
         $injector = new Injector($findable->reveal(), $this->inspector->reveal(), true);
         $instance = $injector->create(DummyNullableDependency::class);
 
         $this->assertNull($instance->getDependency());
+        $findable->get(Argument::any())->shouldNotHaveBeenCalled();
     }
 
     /**
